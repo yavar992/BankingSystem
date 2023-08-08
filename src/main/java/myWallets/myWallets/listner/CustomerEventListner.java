@@ -17,13 +17,17 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+
 @Service
 @Slf4j
 public class CustomerEventListner  {
 
 //implements ApplicationListener<CustomerEvent>
     @Autowired
-    SendSMS sendSMS;
+   EmailSendarUtil emailSendarUtil;
+
+
 
     @Autowired
     CustomerRepo customerRepo;
@@ -33,9 +37,19 @@ public class CustomerEventListner  {
     public void onApplicationEvent(CustomerEvent event) {
         try {
             Customer customer = (Customer) event.getSource();
-            String mobileNumber = "+91" + customer.getMobileNumber();
+            String customerName = customer.getCustomerName();
+            String email = customer.getEmail();
             String otp =  String.valueOf(Validator.otp());
-            sendSMS.sendSMS(mobileNumber , "Your OTP for the account activation is : "+otp);
+            emailSendarUtil.sendEmailWithMultipleBodyLine(email, Arrays.asList( "Dear " + customerName + " \n\n" +
+                    "Thank you for choosing Happy Bank as your financial partner. We're excited to have you onboard! \n\n" +
+                    "To complete the registration process and activate your account, please use the following One-Time Password (OTP):\n\n" +
+                    "OTP "+ otp + "\n\n"
+                    + "Please enter this OTP on the activation page to gain full access to your Happy Bank account. This step ensures the security of your account and your information.\n\n"
+                    +"If you did not initiate this request or have any concerns, please contact our customer support immediately at happybank@org.in or 9020000001.\n\n"
+                    +"We look forward to serving you and providing you with a seamless banking experience. Thank you for trusting Happy Bank with your financial needs.\n\n"
+                    +"Best regards,\n\n"
+                    +"Happy Bank Team"
+            ) ,"Your Happy Bank Account Activation OTP");
             customer.setOtp(otp);
             customerRepo.saveAndFlush(customer);
         }catch (Exception e){

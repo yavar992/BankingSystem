@@ -31,4 +31,7 @@ public interface CustomerService {
 
     CustomerDTO getUserprofile(String uuid) throws LoginException;
 
+    boolean checkIfCustomerMobileNumberOrEmailExist(String mobileNumber, String email);
+
+    Boolean checkIfaUserIsVerifiedOrNot(String uuid);
 }

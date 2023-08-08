@@ -30,6 +30,7 @@ public class LoginController {
     @Autowired
     LoginService loginService;
 
+
     @Autowired
     CustomerService customerService;
 
@@ -43,25 +44,19 @@ public class LoginController {
             if (output!=null){
                 return ResponseEntity.status(HttpStatus.OK).body(output);
             }
-        }catch (LoginException e){
+        } catch (UserAlreadyLoggedIn e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
-        catch (UserNotFoundException e){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(login.getEmail() + " " + e.getMessage());
-        }
-        catch (UserAlreadyLoggedIn e){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(login.getEmail() + " " + e.getMessage());
-        }
         catch (Exception e){
-            log.error("cannot login due to  " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cannot login ");
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An error occurred during login");
     }
 
     //LOGOUT URL
 
-    @GetMapping({"/logout/{UUID}","/signout/{UUID}"})
-    public ResponseEntity<?> logout(@PathVariable("UUID") String UUID){
+    @GetMapping({"/logout","/signout"})
+    public ResponseEntity<?> logout(@RequestParam ("UUID") String UUID){
         try {
             String customer = loginService.logout(UUID);
             if (customer!=null){
@@ -83,14 +78,8 @@ public class LoginController {
                 return ResponseEntity.status(HttpStatus.OK).body(customer);
             }
         }
-        catch (LoginException e){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
-        catch (UserNotFoundException e){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
         catch (Exception e){
-            log.error("cannot get the User due to " +e.getMessage());
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
         }
         return null;
     }

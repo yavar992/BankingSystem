@@ -26,4 +26,7 @@ public interface CustomerRepo extends JpaRepository<Customer ,Long> {
 
     @Query(value = "SELECT * FROM `customer` c LEFT JOIN currentusersession cs ON c.id = cs.userId WHERE cs.uuid=?1",nativeQuery = true)
     Optional<Customer> findByUUID(String uuid);
+
+    @Query(value = "SELECT * FROM customer WHERE mobileNumber = ?1 OR email=?2" ,nativeQuery = true)
+    Customer findByMobileNumberOrEmail(String mobileNumber, String email);
 }

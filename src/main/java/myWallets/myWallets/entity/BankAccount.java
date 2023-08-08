@@ -1,11 +1,15 @@
 package myWallets.myWallets.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.Data;
 import lombok.NoArgsConstructor;
+import myWallets.myWallets.validator.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.time.ZonedDateTime;
@@ -16,26 +20,12 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Data
 public class BankAccount {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
-    @NotNull
-    private Long accountNo;
-
-    @NotNull
-    @Size(min = 5,max = 30 ,message = "Invalid customerName [5-30 Characters only]")
-    private String accountHolderName;
-
-    @NotNull
-    @Size(min = 5, max = 20 ,message = "Invalid AccountType [5-20 character only ]")
-    private String accountType;
-
-    @NotNull
-    @Size(min = 5, max = 10,message = "Invalid IFSC Code [ 5-10 Characters only ]")
-    private String IFSCCode;
 
 
     @NotNull
@@ -43,33 +33,30 @@ public class BankAccount {
     private String bankName;
 
     @NotNull
-    private Double balance;
+    private String bankIdentificationNumber;  //or bankCode = HYBK
+
+    @Column(name = "bankOpeningDate")
+    private ZonedDateTime zonedDateTime;
 
     @NotNull
-    @Size(min = 2 , max = 10 ,message = "Invalid Currency [2-10 characters only ]")
-    private String currency;
+    private String customerSupportNumber;
 
     @NotNull
-    private String Status;
-
-    private ZonedDateTime accountOpeningDate;
-
-    private ZonedDateTime accountCloseDate;
-
-    @NotNull
-    @Size(min = 10 , max = 15 , message = "Invalid CardNumbers [10-15 characters only ]")
-    private String cardNumber;
-
-    @NotNull
-    @Size(min = 3 , max = 3 , message = "Invalid cvv Number format [should be 3 characters only ]")
-    private String cvv;
+    private String customerSupportEmail;
 
 
-    private ZonedDateTime cardExpirationDate;
 
-    @ManyToOne
-    private Customer customer;
-
-    @OneToMany(mappedBy = "bankAccount" ,fetch = FetchType.LAZY ,cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "bankAccount" ,fetch = FetchType.LAZY ,cascade = CascadeType.ALL , orphanRemoval = true)
+    @JsonIgnore
     private List<BankBranches> bankBranches;
+
+    @OneToOne(mappedBy = "bankAccount" ,fetch = FetchType.LAZY , cascade = CascadeType.ALL , orphanRemoval = true)
+    @JsonIgnore
+    private ATM atm;
+
+    @OneToMany(mappedBy = "bankAccount", fetch = FetchType.LAZY ,cascade = CascadeType.ALL , orphanRemoval = true)
+    @JsonIgnore
+    private List<CustomerAccountDetails> customerAccountDetails;
+
+
 }

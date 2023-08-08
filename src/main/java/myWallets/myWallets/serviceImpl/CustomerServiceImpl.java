@@ -3,13 +3,16 @@ package myWallets.myWallets.serviceImpl;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.CustomerDTO;
 import myWallets.myWallets.DTO.OptDTO;
+import myWallets.myWallets.constant.StatusCode;
 import myWallets.myWallets.entity.CurrentUserSession;
 import myWallets.myWallets.entity.Customer;
 import myWallets.myWallets.event.CustomerEvent;
+import myWallets.myWallets.exceptionHandling.UnverifiedCustomerException;
 import myWallets.myWallets.exceptionHandling.UserNotFoundException;
 import myWallets.myWallets.repository.CurrentUserSessionRepo;
 import myWallets.myWallets.repository.CustomerRepo;
 import myWallets.myWallets.service.CustomerService;
+import myWallets.myWallets.validator.ValidatorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
@@ -40,12 +43,13 @@ public class CustomerServiceImpl implements CustomerService {
         try {
             Customer customer =Customer.builder()
                     .customerName(customerDTO.getCustomerName())
-                    .address(customerDTO.getAddress())
+                    .address(customerDTO.getAddress().toUpperCase())
                     .email(customerDTO.getEmail())
                     .gender(customerDTO.getGender())
                     .dateOfBirth(customerDTO.getDateOfBirth())
                     .mobileNumber(customerDTO.getMobileNumber().trim())
                     .password(customerDTO.getPassword())
+                    .isActive(true)
                     .countryCode(customerDTO.getCountryCode())
                     .build();
               Customer customer1 = customerRepo.saveAndFlush(customer);
@@ -121,26 +125,17 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public Customer findByUserCurrentSession(String uuid) throws myWallets.myWallets.exceptionHandling.LoginException {
         try {
-            Optional<CurrentUserSession> currentUserSession = currentUserSessionRepo.findByUUID(uuid);
-            if (!currentUserSession.isPresent()){
-                throw new LoginException("No User LoggedIn");
-            }
+
             Optional<Customer> customer = customerRepo.findByUUID(uuid);
-            if (!customer.isPresent()){
-                throw new UserNotFoundException("No User Found");
-            }
+            log.info("customer " + customer);
+            ValidatorUtils.validateLoggedInCustomer(customer,uuid);
             Customer customer1 = customer.get();
             return customer1;
-        }catch (LoginException e){
-            throw new myWallets.myWallets.exceptionHandling.LoginException("No User LoggedIn");
-        }
-        catch (UserNotFoundException e){
-            throw new UserNotFoundException("user not found ");
         }
         catch (Exception e){
             log.info("cannot get the user by the uuid due to " + e.getMessage());
+            throw e;
         }
-        return null;
     }
 
     @Override
@@ -168,6 +163,43 @@ public class CustomerServiceImpl implements CustomerService {
                     .build();
             return customerDTO;
         }
+
+    @Override
+    public boolean checkIfCustomerMobileNumberOrEmailExist(String mobileNumber, String email) {
+        try {
+            Customer customer = customerRepo.findByMobileNumberOrEmail(mobileNumber ,email);
+            if (customer!=null){
+                throw new UserNotFoundException("User is already exists ");
+            }
+            return customer!=null;
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
+    @Override
+    public Boolean checkIfaUserIsVerifiedOrNot(String uuid) {
+        try {
+            Optional<Customer> customer = customerRepo.findByUUID(uuid);
+            Customer customer1 = customer.get();
+            if (customer1!=null && customer1.isVerified()==false){
+                throw new UnverifiedCustomerException("you account is not verified yet plz verify yourself ");
+            }
+            if (!customer.isPresent()){
+                throw new myWallets.myWallets.exceptionHandling.LoginException("No User Login for uuid " + uuid);
+            }
+            Optional<CurrentUserSession> currentUserSession = currentUserSessionRepo.findByUUID(uuid);
+            if (currentUserSession.isPresent()){
+                throw new myWallets.myWallets.exceptionHandling.LoginException("User is already logged in");
+            }
+            if (customer1!=null && customer1.isVerified()==true){
+                return true;
+            }
+        }catch (Exception e){
+            throw e;
+        }
+        return false;
+    }
 
 
 }

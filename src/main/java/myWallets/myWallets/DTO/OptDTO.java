@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 public class OptDTO {
 
     @NotNull
-    @Size(min = 10,max = 10 ,message = "msg should be of 10 digits")
+    @Size(min = 4,max = 10 ,message = "msg should be of 10 digits")
     private String otp;
 
    private String password;

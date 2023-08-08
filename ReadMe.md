@@ -29,3 +29,19 @@ where the account holder can deposit a sum of money for a specific period at a f
 Auto-Payment: Represents automatic payment arrangements set up by the account holder for regular bill payments or subscriptions.
 
 Standing Instruction: Represents standing instructions set by the account holder for recurring fund transfers between their accounts or to other beneficiaries.
+
+
+
+
+//TO DO 
+add more braches to the bank
+delete bankBranches from bank
+update the branches 
+get all the branches for the bank
+get all the details for ths customer including the bank and branches 
+add money to the bank 
+debit money from the bank
+update customer bank branches or customer information
+check if a user has an account already or not if yes throw him a error that you already have account in our bank
+check if user want to open the diff account type in our bank than allow him to open the account 
+check if the customer is verfied or not if he's not then throw him a error that you are not verify 

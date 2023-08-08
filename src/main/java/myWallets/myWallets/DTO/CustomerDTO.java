@@ -28,12 +28,10 @@ public class CustomerDTO {
 
     @NotNull
     @Size(min = 2,max = 3 , message = "country code should be of 2-3 digits")
-    @JsonIgnore
     private String countryCode;
 
     @NotNull
     @Size(min = 6, max = 12, message = "Invalid Password [ must be 6 to 8 characters ]")
-    @JsonIgnore
     private String password;
 
     @NotNull

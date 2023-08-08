@@ -57,4 +57,30 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
     }
 
+    @ExceptionHandler(BankBranchesNotFoundException.class)
+    public ResponseEntity<ErrorMessage> branchesNotFoundException(BankBranchesNotFoundException e , WebRequest webRequest){
+        Integer statusCode = HttpStatus.UNAUTHORIZED.value();
+        String message = e.getMessage();
+        String path = webRequest.getDescription(false);
+        ErrorMessage errorMessage = new ErrorMessage(statusCode , message , path);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+    }
+
+    @ExceptionHandler(BankNotFoundException.class)
+    public ResponseEntity<ErrorMessage> bankNotFound(BankNotFoundException e , WebRequest webRequest){
+        Integer statusCode = HttpStatus.UNAUTHORIZED.value();
+        String message = e.getMessage();
+        String path = webRequest.getDescription(false);
+        ErrorMessage errorMessage = new ErrorMessage(statusCode , message , path);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+    }
+
+    @ExceptionHandler(UnverifiedCustomerException.class)
+    public ResponseEntity<ErrorMessage> unverifiedCustomer(UnverifiedCustomerException e , WebRequest webRequest){
+        Integer statusCode = HttpStatus.UNAUTHORIZED.value();
+        String message = e.getMessage();
+        String path = webRequest.getDescription(false);
+        ErrorMessage errorMessage = new ErrorMessage(statusCode , message , path);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+    }
 }

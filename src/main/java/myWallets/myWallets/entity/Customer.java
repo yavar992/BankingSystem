@@ -10,10 +10,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.DynamicUpdate;
-
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-import java.util.List;
 
 
 @Entity
@@ -70,6 +67,9 @@ public class Customer {
     private boolean isVerified; // Whether the user's identity is verified or not
 
 
+    @OneToOne(mappedBy = "customer" , fetch = FetchType.LAZY ,cascade = CascadeType.ALL , orphanRemoval = true)
+    private CustomerAccountDetails customerAccountDetails;
+
 
     @PrePersist
     public void TranslateNameAndAddressIntoUpparCase(){
@@ -78,6 +78,4 @@ public class Customer {
         createdDate = ZonedDateTime.now();
     }
 
-    @OneToMany(mappedBy = "customer" , fetch = FetchType.LAZY , cascade = CascadeType.ALL , orphanRemoval = true)
-    private List<BankAccount> bankAccounts;
 }

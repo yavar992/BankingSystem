@@ -1,22 +1,21 @@
 package myWallets.myWallets.serviceImpl;
 
 import com.sun.jdi.event.ExceptionEvent;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.ForgetPasswordDTO;
 import myWallets.myWallets.DTO.Login;
 import myWallets.myWallets.DTO.OptDTO;
 import myWallets.myWallets.entity.CurrentUserSession;
 import myWallets.myWallets.entity.Customer;
-import myWallets.myWallets.exceptionHandling.InvalidOTPException;
-import myWallets.myWallets.exceptionHandling.LoginException;
-import myWallets.myWallets.exceptionHandling.UserAlreadyLoggedIn;
-import myWallets.myWallets.exceptionHandling.UserNotFoundException;
+import myWallets.myWallets.exceptionHandling.*;
 import myWallets.myWallets.repository.CurrentUserSessionRepo;
 import myWallets.myWallets.repository.CustomerRepo;
 import myWallets.myWallets.service.CustomerService;
 import myWallets.myWallets.service.LoginService;
 import myWallets.myWallets.util.EmailSendarUtil;
 import myWallets.myWallets.validator.Validator;
+import myWallets.myWallets.validator.ValidatorUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -47,16 +46,23 @@ public class LoginServiceImpl implements LoginService {
     public String login(Login login) {
 
                 try {
+
+
                     Customer existingUser = customerRepo.findByEmail(login.getEmail());
+                    log.info("existing user " + existingUser);
+                    if (existingUser!=null && existingUser.isVerified()==false){
+                        throw new UnverifiedCustomerException("you are not verified plz verified your account first to login ");
+                    }
                     log.info("existing customer " + existingUser);
                     if (existingUser==null){
-                        throw new UserNotFoundException("User Not Exist ");
+                        throw new UserNotFoundException("You don't have any account into our system plz registered yourself to login ");
                     }
                     Optional<CurrentUserSession> currentUserSession = currentUserSessionRepo.findByUserId(existingUser.getId());
                     log.info("current session " + currentUserSession);
                     if (currentUserSession.isPresent()){
                         throw new UserAlreadyLoggedIn("User is already login ");
                     }
+                    ValidatorUtils.validatePasswordAndEmail(login ,existingUser);
                     if (login.getEmail().equals(existingUser.getEmail()) && login.getPassword().equals(existingUser.getPassword())){
                         Long userId = existingUser.getId();
                         String UUID = java.util.UUID.randomUUID().toString();
@@ -65,17 +71,9 @@ public class LoginServiceImpl implements LoginService {
                         currentUserSessionRepo.saveAndFlush(currentUserSession1);
                         return UUID;
                     }
-                }catch (LoginException e){
-                    throw new LoginException("Bad Credential - either password or email is incorrect ");
-                }
-                catch (UserAlreadyLoggedIn e){
-                    throw new UserAlreadyLoggedIn("user is already loggedIn");
-                }
-                catch (UserNotFoundException e){
-                    throw new UserNotFoundException("User Not Found ");
                 }
                 catch (Exception e){
-                    log.error("cannot login due to " +e.getMessage());
+                    throw e;
                 }
                 return null;
     }
