@@ -2,8 +2,11 @@ package myWallets.myWallets.serviceImpl;
 
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.BankAccountDTO;
+import myWallets.myWallets.constant.HappyBankUtilMethods;
 import myWallets.myWallets.constant.StatusCode;
 import myWallets.myWallets.entity.*;
+import myWallets.myWallets.event.AccountOpenEvent;
+import myWallets.myWallets.exceptionHandling.BankBranchesNotFoundException;
 import myWallets.myWallets.exceptionHandling.LoginException;
 import myWallets.myWallets.exceptionHandling.UnverifiedCustomerException;
 import myWallets.myWallets.repository.*;
@@ -33,22 +36,33 @@ public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetails
 
     private final CurrentUserSessionRepo currentUserSessionRepo;
 
+    private final HappyBankUtilMethods happyBankUtilMethods;
 
 
-    public CustomerAccountDetailsServiceImpl(CustomerAccountDetailsRepo customerAccountDetailsRepo, ApplicationEventPublisher applicationEventPublisher, CurrentUserSessionRepo currentUserSessionRepo, CustomerService customerService, BankBranchService bankBranchService, BankAccountService bankAccountService) {
+
+
+    public CustomerAccountDetailsServiceImpl(CustomerAccountDetailsRepo customerAccountDetailsRepo,
+                                             ApplicationEventPublisher applicationEventPublisher,
+                                             CurrentUserSessionRepo currentUserSessionRepo,
+                                             CustomerService customerService,
+                                             BankBranchRepo bankBranchRepo,
+                                             BankAccountRepo bankAccountRepo ,
+                                             HappyBankUtilMethods happyBankUtilMethods
+    ) {
         this.customerAccountDetailsRepo = customerAccountDetailsRepo;
         this.applicationEventPublisher = applicationEventPublisher;
         this.currentUserSessionRepo = currentUserSessionRepo;
         this.customerService = customerService;
-        this.bankBranchService = bankBranchService;
-        this.bankAccountService = bankAccountService;
+        this.bankBranchRepo = bankBranchRepo;
+        this.bankAccountRepo = bankAccountRepo;
+        this.happyBankUtilMethods =happyBankUtilMethods;
     }
 
-    private final BankAccountService bankAccountService;
+    private final BankAccountRepo bankAccountRepo;
 
     CustomerService customerService;
 
-    BankBranchService bankBranchService;
+    BankBranchRepo bankBranchRepo;
 
     @Override
     public CustomerAccountDetails openAccountToBank(CustomerAccountDetails bankAccount) {
@@ -64,25 +78,24 @@ public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetails
     @Override
     public CustomerAccountDetails openAccount(String uuid, BankAccountDTO bankAccountDTO) {
         try {
-            Customer customer = customerService.findByUserCurrentSession(uuid);
-            log.info("customer 1" + customer);
-            ValidatorUtils.validateUnverifiedCustomer(customer);
-            // BankAccount bankAccount = bankAccountService.findAccountById(bankAccountDTO.getBankId());
-            // log.info("bankAccount " + bankAccount);
-            BankBranches bankBranches = bankBranchService.bankBranchesById(bankAccountDTO.getBranchId());
-            // log.info("bankBranches " + bankBranches);
+                happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+                List<BankAccount> bankAccount = bankAccountRepo.findAll();
+                BankAccount bankAccount1 = bankAccount.get(0);
+                BankBranches bankBranches = bankBranchRepo.findById(bankAccountDTO.getBranchId())
+                        .orElseThrow(()->new BankBranchesNotFoundException("Branch Not Found"));
+             log.info("bankBranches " + bankBranches);
             CustomerAccountDetails customerAccountDetails = CustomerAccountDetails.builder()
                     .accountOpeningDate(ZonedDateTime.now())
-                    .accountType(bankAccountDTO.getAccountType().toUpperCase())
+                    .bankAccountType(bankAccountDTO.getBankAccountType())
                     .accountHolderName(bankAccountDTO.getAccountHolderName().toUpperCase())
                     .accountNo("HYBK0"+bankBranches.getBranchCode()+ Validator.accountLast4digits())
-                    // .bankAccount(bankAccount)
+//                     .bankAccount(bankAccount)
                     .balance(bankAccountDTO.getBalance())
-                    .customer(customer)
+                    // .customer(customer)
                     .currency("INR")
                     .accountCloseDate(null)
                     .Status("ACTIVE")
-                    .bankBranches(bankBranches)
+//                    .bankBranches(bankBranches)
                     .build();
             return customerAccountDetailsRepo.saveAndFlush(customerAccountDetails);
         }catch (Exception e){
@@ -91,12 +104,14 @@ public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetails
         }
     }
 
+    @Override
+    public void saveCustomer(CustomerAccountDetails bankAccount) {
 
+        AccountOpenEvent accountOpenEvent = new AccountOpenEvent(bankAccount);
+        applicationEventPublisher.publishEvent(accountOpenEvent);
+        customerAccountDetailsRepo.saveAndFlush(bankAccount);
+    }
 
-
-
-//  AccountOpenEvent accountOpenEvent = new AccountOpenEvent(customerAccountDetails);
-//            applicationEventPublisher.publishEvent(accountOpenEvent);
 
 
 }

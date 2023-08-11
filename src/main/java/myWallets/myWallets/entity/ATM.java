@@ -37,6 +37,7 @@ public class ATM {
     private ZonedDateTime atmIssueAt;
     private ZonedDateTime atmExpirationDate;
 
-    @OneToOne
-    private BankAccount bankAccount;
+    @OneToOne(cascade = CascadeType.ALL)
+    private CustomerAccountDetails customerAccountDetails;
+
 }

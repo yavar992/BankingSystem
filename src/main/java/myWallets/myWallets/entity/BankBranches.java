@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -15,15 +12,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-@Data
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
 @DynamicUpdate
 public class BankBranches {
-
-
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -63,14 +60,14 @@ public class BankBranches {
 
     private String closingHours;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JsonIgnore
     private BankAccount bankAccount;
 
-    @OneToMany(mappedBy = "bankBranches" , fetch = FetchType.LAZY , cascade = CascadeType.ALL , orphanRemoval = true)
-    private List<CustomerAccountDetails> customers = new ArrayList<>();
 
-
-
+    @ToString.Exclude
+    @OneToMany( fetch = FetchType.LAZY , cascade = CascadeType.ALL , orphanRemoval = true)
+    @JsonIgnore
+    private List<Customer> customers = new ArrayList<>();
 
 }

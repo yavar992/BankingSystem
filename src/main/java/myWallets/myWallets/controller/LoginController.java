@@ -5,37 +5,29 @@ import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.ForgetPasswordDTO;
 import myWallets.myWallets.DTO.Login;
 import myWallets.myWallets.DTO.OptDTO;
-import myWallets.myWallets.entity.CurrentUserSession;
 import myWallets.myWallets.entity.Customer;
-import myWallets.myWallets.exceptionHandling.LoginException;
 import myWallets.myWallets.exceptionHandling.UserAlreadyLoggedIn;
-import myWallets.myWallets.exceptionHandling.UserNotFoundException;
 import myWallets.myWallets.repository.CurrentUserSessionRepo;
 import myWallets.myWallets.service.CustomerService;
 import myWallets.myWallets.service.LoginService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Optional;
 
 @RestController
 @Slf4j
 @RequestMapping("/api/v1/user")
 public class LoginController {
 
-    @Autowired
     LoginService loginService;
-
-
-    @Autowired
     CustomerService customerService;
-
-    @Autowired
     CurrentUserSessionRepo currentUserSessionRepo;
+
+    public LoginController(LoginService loginService, CustomerService customerService, CurrentUserSessionRepo currentUserSessionRepo) {
+        this.loginService = loginService;
+        this.customerService = customerService;
+        this.currentUserSessionRepo = currentUserSessionRepo;
+    }
 
     @PostMapping({"/login","/signin"})
     public ResponseEntity<?> login(@Valid @RequestBody Login login){
@@ -116,4 +108,6 @@ public class LoginController {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Couldn't verify the otp");
     }
+
+
 }

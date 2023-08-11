@@ -18,9 +18,10 @@ public interface CustomerRepo extends JpaRepository<Customer ,Long> {
     Optional<Customer> findByOtp(String otp);
 
 
+    @Query(value = "SELECT * FROM customer WHERE email =?1" ,nativeQuery = true)
     Customer findByEmail(String email);
 
-    @Query(value = "SELECT * FROM customer WHERE mobileNumber =?1" ,nativeQuery = true)
+    @Query(value = "SELECT * FROM `customer` WHERE mobileNumber =?1" ,nativeQuery = true)
     Customer findByMobileNumber(String mobileNumber);
 
 

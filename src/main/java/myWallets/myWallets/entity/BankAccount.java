@@ -5,10 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import myWallets.myWallets.validator.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -20,7 +17,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Data
+@Setter
+@Getter
+@ToString
 public class BankAccount {
 
     @Id
@@ -45,18 +44,10 @@ public class BankAccount {
     private String customerSupportEmail;
 
 
-
+    @ToString.Exclude
+    @JsonIgnore
     @OneToMany(mappedBy = "bankAccount" ,fetch = FetchType.LAZY ,cascade = CascadeType.ALL , orphanRemoval = true)
-    @JsonIgnore
     private List<BankBranches> bankBranches;
-
-    @OneToOne(mappedBy = "bankAccount" ,fetch = FetchType.LAZY , cascade = CascadeType.ALL , orphanRemoval = true)
-    @JsonIgnore
-    private ATM atm;
-
-    @OneToMany(mappedBy = "bankAccount", fetch = FetchType.LAZY ,cascade = CascadeType.ALL , orphanRemoval = true)
-    @JsonIgnore
-    private List<CustomerAccountDetails> customerAccountDetails;
 
 
 }

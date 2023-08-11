@@ -1,6 +1,8 @@
 package myWallets.myWallets.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -32,9 +34,8 @@ public class CustomerAccountDetails {
     @Size(min = 5,max = 30 ,message = "Invalid customerName [5-30 Characters only]")
     private String accountHolderName;
 
-    @NotNull
-    @Size(min = 5, max = 20 ,message = "Invalid AccountType [5-20 character only ]")
-    private String accountType;
+    @Enumerated(EnumType.STRING)
+    private BankAccountType bankAccountType;
 
     @NotNull
     private Double balance;
@@ -50,18 +51,16 @@ public class CustomerAccountDetails {
 
     private ZonedDateTime accountCloseDate;
 
-    @ManyToOne
-    @JsonIgnore
-    private BankAccount bankAccount;
-
-    @OneToOne
+    @ManyToOne(fetch = FetchType.LAZY , cascade = CascadeType.ALL)
     @JoinColumn(name = "customer_id")
-    @JsonIgnore
-    private Customer customer;
+    Customer customer;
 
-    @ManyToOne
-    @JsonIgnore
-    private BankBranches bankBranches;
+    @OneToOne(fetch = FetchType.LAZY , orphanRemoval = true)
+    @JoinColumn(name = "atm_id")
+    ATM atm;
+
+    @ManyToOne(fetch = FetchType.LAZY , cascade = CascadeType.ALL)
+    BankAccount bankAccount;
 
     public void saveCustomer(){
         

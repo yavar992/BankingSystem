@@ -57,4 +57,11 @@ public interface ValidatorUtils {
         }
     }
 
+
+    public static void validUserNotFound(Customer customer) {
+        if (customer != null && !customer.isVerified()) {
+            throw new UnverifiedCustomerException(StatusCode.UNVERIFIED_ACCOUNT.getMessage());
+        }
+    }
+
 }

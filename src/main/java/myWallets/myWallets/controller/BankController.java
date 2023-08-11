@@ -4,7 +4,6 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.BankAccountDTO;
 import myWallets.myWallets.constant.StatusCode;
-import myWallets.myWallets.entity.BankAccount;
 import myWallets.myWallets.entity.CustomerAccountDetails;
 import myWallets.myWallets.service.CustomerAccountDetailsService;
 import myWallets.myWallets.util.BankAccountUtil;
@@ -26,10 +25,13 @@ public class BankController {
 
     //OPEN ACCOUNT
     @PostMapping("/openAccount")
-    public ResponseEntity<?> openAccount(@RequestParam("UUID") String UUID , @Valid @RequestBody BankAccountDTO bankAccountDTO){
+    public ResponseEntity<?> openAccount(@RequestParam("UUID") String UUID ,
+                                         @Valid @RequestBody BankAccountDTO bankAccountDTO ,
+                                         @RequestParam("branchId") Long branchId ){
         try {
-            CustomerAccountDetails bankAccount = customerAccountDetailsService.openAccount(UUID ,bankAccountDTO);
+            CustomerAccountDetails bankAccount = bankAccountUtil.openAccount(UUID ,bankAccountDTO , branchId);
             if (bankAccount!=null){
+                customerAccountDetailsService.saveCustomer(bankAccount);
                 return ResponseEntity.status(StatusCode.OK.getCode()).body("Congratulations you have successfully opened you account in happy bank");
             }
         }catch (Exception e){
@@ -38,5 +40,4 @@ public class BankController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cannot open the account");
     }
 
-    
 }

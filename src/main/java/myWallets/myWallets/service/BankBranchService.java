@@ -1,6 +1,6 @@
 package myWallets.myWallets.service;
 
-import myWallets.myWallets.DTO.BankBranchDTO;
+import myWallets.myWallets.DTO.BankBranchSendarDTO;
 import myWallets.myWallets.entity.BankBranches;
 
 import javax.security.auth.login.LoginException;
@@ -15,7 +15,15 @@ public interface BankBranchService {
 
     void saveBranchesToBank(BankBranches addBranchToBank);
 
-    BankBranches getBranchesByBranchId(String uuid, Long id);
+    BankBranchSendarDTO getBranchesByBranchId(String uuid, Long id);
 
     BankBranches bankBranchesById(Long id);
+
+    List<BankBranchSendarDTO> getALLbranchesData(String uuid);
+
+    BankBranchSendarDTO findBankBranchById(String uuid, Long id);
+
+    void updateBankBranch(BankBranches updateMessage);
+
+    boolean branchAlreadyExist(String branchEmail, String branchPhoneNumber);
 }

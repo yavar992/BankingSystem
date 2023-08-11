@@ -1,63 +1,59 @@
 package myWallets.myWallets.serviceImpl;
 
+import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
+import myWallets.myWallets.DTO.CustomerAccountRecieveDTO;
 import myWallets.myWallets.DTO.CustomerDTO;
-import myWallets.myWallets.DTO.OptDTO;
-import myWallets.myWallets.constant.StatusCode;
+import myWallets.myWallets.constant.HappyBankUtilMethods;
+import myWallets.myWallets.convertor.CustomerConvertor;
 import myWallets.myWallets.entity.CurrentUserSession;
 import myWallets.myWallets.entity.Customer;
 import myWallets.myWallets.event.CustomerEvent;
+import myWallets.myWallets.exceptionHandling.InvalidOTPException;
 import myWallets.myWallets.exceptionHandling.UnverifiedCustomerException;
 import myWallets.myWallets.exceptionHandling.UserNotFoundException;
 import myWallets.myWallets.repository.CurrentUserSessionRepo;
 import myWallets.myWallets.repository.CustomerRepo;
 import myWallets.myWallets.service.CustomerService;
+import myWallets.myWallets.validator.Validator;
 import myWallets.myWallets.validator.ValidatorUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.LoginException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
-import java.util.Spliterator;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Transactional
 public class CustomerServiceImpl implements CustomerService {
 
-    @Autowired
     CustomerRepo customerRepo;
-
-    @Autowired
+    HappyBankUtilMethods happyBankUtilMethods;
     ApplicationEventPublisher applicationEventPublisher;
-
-    @Autowired
     CurrentUserSessionRepo currentUserSessionRepo ;
+
+    public CustomerServiceImpl(CustomerRepo customerRepo,
+                               HappyBankUtilMethods happyBankUtilMethods,
+                               ApplicationEventPublisher applicationEventPublisher,
+                               CurrentUserSessionRepo currentUserSessionRepo) {
+        this.customerRepo = customerRepo;
+        this.happyBankUtilMethods = happyBankUtilMethods;
+        this.applicationEventPublisher = applicationEventPublisher;
+        this.currentUserSessionRepo = currentUserSessionRepo;
+    }
 
     @Override
     public Customer saveCustomer(CustomerDTO customerDTO) {
         try {
-            Customer customer =Customer.builder()
-                    .customerName(customerDTO.getCustomerName())
-                    .address(customerDTO.getAddress().toUpperCase())
-                    .email(customerDTO.getEmail())
-                    .gender(customerDTO.getGender())
-                    .dateOfBirth(customerDTO.getDateOfBirth())
-                    .mobileNumber(customerDTO.getMobileNumber().trim())
-                    .password(customerDTO.getPassword())
-                    .isActive(true)
-                    .countryCode(customerDTO.getCountryCode())
-                    .build();
-              Customer customer1 = customerRepo.saveAndFlush(customer);
+            Customer customer = CustomerConvertor.customerDtoToCustomer(customerDTO);
               log.info("User Registered Successfully !");
-            CustomerEvent customerEvent = new CustomerEvent(customer1);
+            CustomerEvent customerEvent = new CustomerEvent(customer);
              applicationEventPublisher.publishEvent(customerEvent);
-             return customer1;
-
+             return customerRepo.saveAndFlush(customer);
         }catch (Exception e){
             log.error("cannot save the customer due to " + e.getMessage());
         }
@@ -65,11 +61,27 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Customer findCustomerByOTP(String otp) {
-       Optional<Customer> customer = customerRepo.findByOtp(otp);
-       if(customer.isPresent()){
-           return customer.get();
-       }
+    public String findCustomerByOTP(String otp) {
+        try {
+            if (otp==null || otp.isEmpty()){
+                throw new InvalidOTPException("Plz enter otp");
+            }
+            Validator.verifyOTP(otp);
+            Optional<Customer> customer = customerRepo.findByOtp(otp);
+            if (customer==null || !customer.isPresent()){
+                throw new myWallets.myWallets.exceptionHandling.LoginException("Invalid OTP ");
+            }
+            Customer customer1 = customer.get();
+            String OTP = customer1.getOtp();
+            if(OTP.equals(otp)){
+                customer1.setOtp(null);
+                customer1.setVerified(true);
+             customerRepo.saveAndFlush(customer1);
+             return "customer verified successfully";
+            }
+        }catch (Exception e){
+            throw e;
+        }
        return null;
     }
 
@@ -108,7 +120,6 @@ public class CustomerServiceImpl implements CustomerService {
             return customer;
     }
 
-    @Override
     public Customer findByCustomerMobileNumber(String mobileNumber) {
         try {
             Customer customer = customerRepo.findByMobileNumber(mobileNumber);
@@ -159,7 +170,7 @@ public class CustomerServiceImpl implements CustomerService {
                     .mobileNumber(customer1.getMobileNumber())
                     .gender(customer1.getGender())
                     .email(customer1.getEmail())
-                    .dateOfBirth(customer1.getDateOfBirth())
+                    .dateOfBirth(LocalDate.parse(String.valueOf(customer1.getDateOfBirth())))
                     .build();
             return customerDTO;
         }
@@ -199,6 +210,67 @@ public class CustomerServiceImpl implements CustomerService {
             throw e;
         }
         return false;
+    }
+
+    @Override
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
+    public List<CustomerAccountRecieveDTO> findAllCustomer(String uuid) {
+        try {
+            Optional<Customer> customer = customerRepo.findByUUID(uuid);
+            Customer customer1 = customer.get();
+            if (customer1!=null && !customer1.isVerified()){
+                throw new UnverifiedCustomerException("you are not authorized to see the list of all user ");
+            }
+            if (customer==null){
+                throw new UserNotFoundException("No User logged in");
+            }
+            List<Customer> customers = customerRepo.findAll();
+            return customers.stream().map(CustomerConvertor::customerToCustomerDTO).collect(Collectors.toList());
+
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
+    @Override
+    public CustomerAccountRecieveDTO findByCustomerMobileNumber(String mobileNumber, String uuid) {
+        try {
+            happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+            Customer customer = customerRepo.findByMobileNumber(mobileNumber);
+            if (customer==null){
+                throw new UserNotFoundException("User not found ");
+            }
+            return CustomerConvertor.customerToCustomerDTO(customer);
+        }catch (Exception e){
+            log.info("user not found due to " + e.getMessage());
+            throw e;
+        }
+    }
+
+    @Override
+    public String updateCustomerAccount(Long id, String uuid, CustomerAccountRecieveDTO customerAccountRecieveDTO) {
+        try {
+            happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+            Customer customer = happyBankUtilMethods.updateCustomerAccount(id ,customerAccountRecieveDTO);
+            customerRepo.saveAndFlush(customer);
+            return "Customer updated successfully !";
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
+    @Override
+    public String deleteCustomer(String uuid, Long id) {
+        happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+        Customer customer = getAccount(id);
+        customerRepo.delete(customer);
+        Optional<CurrentUserSession> currentUserSession = currentUserSessionRepo.findByUUID(uuid);
+        if (currentUserSession.isPresent()){
+            CurrentUserSession currentUserSession1 = currentUserSession.get();
+            currentUserSessionRepo.delete(currentUserSession1);
+        }
+        return "customer deleted successfully";
+
     }
 
 

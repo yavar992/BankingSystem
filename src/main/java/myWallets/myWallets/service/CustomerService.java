@@ -1,19 +1,19 @@
 package myWallets.myWallets.service;
 
+import myWallets.myWallets.DTO.CustomerAccountRecieveDTO;
 import myWallets.myWallets.DTO.CustomerDTO;
-import myWallets.myWallets.DTO.Login;
-import myWallets.myWallets.DTO.OptDTO;
 import myWallets.myWallets.entity.Customer;
 
 import javax.security.auth.login.LoginException;
 import java.util.List;
+import java.util.UUID;
 
 public interface CustomerService {
     
 
     Customer saveCustomer(CustomerDTO customerDTO);
 
-    Customer findCustomerByOTP(String otp);
+    String findCustomerByOTP(String otp);
 
     void validateCustomer(Customer customer);
 
@@ -25,7 +25,6 @@ public interface CustomerService {
 
     Customer getCustomerByEmail(String email);
 
-    Customer findByCustomerMobileNumber(String mobileNumber);
 
     Customer findByUserCurrentSession(String uuid) throws myWallets.myWallets.exceptionHandling.LoginException;
 
@@ -34,4 +33,12 @@ public interface CustomerService {
     boolean checkIfCustomerMobileNumberOrEmailExist(String mobileNumber, String email);
 
     Boolean checkIfaUserIsVerifiedOrNot(String uuid);
+
+    List<CustomerAccountRecieveDTO> findAllCustomer(String uuid);
+
+    CustomerAccountRecieveDTO findByCustomerMobileNumber(String mobileNumber, String uuid);
+
+    String updateCustomerAccount(Long id, String uuid, CustomerAccountRecieveDTO customerAccountRecieveDTO);
+
+    String deleteCustomer(String uuid, Long id);
 }

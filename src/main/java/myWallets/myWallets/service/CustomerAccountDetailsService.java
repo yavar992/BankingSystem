@@ -9,4 +9,6 @@ public interface CustomerAccountDetailsService {
     CustomerAccountDetails openAccountToBank(CustomerAccountDetails bankAccount);
 
     CustomerAccountDetails openAccount(String uuid, BankAccountDTO bankAccountDTO);
+
+    void saveCustomer(CustomerAccountDetails bankAccount);
 }

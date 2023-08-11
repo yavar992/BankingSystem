@@ -86,7 +86,7 @@ public class BankAccountServiceImpl implements BankAccountService {
     @Override
     public List<BankAccount> findBankAccount() {
         try {
-            List<BankAccount> bankAccount = bankAccountRepo.findAll();
+            List<BankAccount> bankAccount = bankAccountRepo.findAllBankAccounts();
             log.info("bank account " + bankAccount);
             if (bankAccount==null || bankAccount.isEmpty()){
                 throw new BankNotFoundException("Bank account not found");

@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import myWallets.myWallets.entity.BankAccountType;
 
 @NoArgsConstructor
 @AllArgsConstructor
@@ -17,15 +18,13 @@ public class BankAccountDTO {
     @Size(min = 5,max = 30 ,message = "Invalid customerName [5-30 Characters only]")
     private String accountHolderName;
 
-    @NotNull
-    @Size(min = 5, max = 20 ,message = "Invalid AccountType [5-20 character only ]")
-    private String accountType;
-
+    private BankAccountType bankAccountType;
     @NotNull
     private Double balance;
 
     private Long branchId;
 
     private Long bankId;
+
 
 }
