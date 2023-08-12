@@ -2,6 +2,9 @@ package myWallets.myWallets.validator;
 
 import myWallets.myWallets.exceptionHandling.InvalidOTPException;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 public interface Validator {
 
     static int otp() {
@@ -18,6 +21,13 @@ public interface Validator {
             if (otp.length()>6 || otp.length()<6){
                 throw new InvalidOTPException("Invalid OTP size ");
             }
+    }
+
+    public static String generateTransactionId(){
+        LocalDateTime dateTime = LocalDateTime.now(); // Replace with your LocalDateTime object
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyy");
+        String formattedDate = "TNX"+dateTime.format(formatter) + otp();
+        return formattedDate;
     }
 
 

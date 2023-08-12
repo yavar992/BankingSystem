@@ -3,6 +3,7 @@ package myWallets.myWallets.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.CustomerAccountRecieveDTO;
+import myWallets.myWallets.DTO.CustomerAllDetails;
 import myWallets.myWallets.DTO.CustomerDTO;
 import myWallets.myWallets.DTO.OptDTO;
 import myWallets.myWallets.entity.Customer;
@@ -176,6 +177,20 @@ public class CustomerController {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cannot get all customers");
     }
+    
+    //GET CUSTOMER BY ID
+    @GetMapping("/getCustomerById/{id}")
+    public ResponseEntity<?> getCustomerById(@RequestParam("UUID") String UUID , @PathVariable("id") Long id){
+        try {
+            CustomerAccountRecieveDTO customerAccountRecieveDTO = customerService.findCustomerById(UUID ,id);
+            if(customerService!=null){
+                return ResponseEntity.status(HttpStatus.OK).body(customerAccountRecieveDTO);
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
+        return  ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cannot get the customer by id " + id);
+    }
 
     //UPDATE A CUSTOMER
     @GetMapping("/updateCustomer/{id}")
@@ -205,6 +220,17 @@ public class CustomerController {
             return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot delete the customer account");
+    }
+
+
+    //GET ALL DETAILS OF CUSTOMER INCLUDING BANK BRANCH , CUSTOMER DETAILS
+    public ResponseEntity<?> getAllDetailsOfCustomer(@RequestParam("UUID") String UUID , @RequestParam("customerId") Long customerId){
+        try {
+            CustomerAllDetails customerAllDetails = customerService.findAllCustomerDetailsByCustomerId(customerId , UUID);
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cannot get the all details of customer ");
     }
 
 }

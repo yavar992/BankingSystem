@@ -157,4 +157,19 @@ public class BankBranchServiceImpl  implements BankBranchService {
             throw e;
         }
     }
+
+    @Override
+    public BankBranches getBankBranchesByIFSCCode(String uuid, String ifscCode) {
+        try {
+            happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+            Optional<BankBranches> bankBranches = bankBranchRepo.findByIFSCCode(ifscCode);
+            if (bankBranches==null){
+                throw new BankBranchesNotFoundException("Bank branch not found");
+            }
+            BankBranches bankBranches1 = bankBranches.get();
+            return bankBranches1;
+        }catch (Exception e){
+            throw e;
+        }
+    }
 }

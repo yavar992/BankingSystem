@@ -164,5 +164,16 @@ public class BankBranchController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cannot update the bank");
     }
 
-
+    @GetMapping("/getBranchByIFSCCode")
+    public ResponseEntity<?> getBankBranchesByIFSCCode(@RequestParam("UUID") String UUID , @RequestParam("ifscCode") String ifscCode){
+        try {
+            BankBranches bankBranches = bankBranchService.getBankBranchesByIFSCCode(UUID, ifscCode);
+            if (bankBranches!=null){
+                return ResponseEntity.status(HttpStatus.OK).body(bankBranches);
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cannot get the bank branches");
+    }
 }

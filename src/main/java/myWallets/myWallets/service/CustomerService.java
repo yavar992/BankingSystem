@@ -1,6 +1,7 @@
 package myWallets.myWallets.service;
 
 import myWallets.myWallets.DTO.CustomerAccountRecieveDTO;
+import myWallets.myWallets.DTO.CustomerAllDetails;
 import myWallets.myWallets.DTO.CustomerDTO;
 import myWallets.myWallets.entity.Customer;
 
@@ -41,4 +42,8 @@ public interface CustomerService {
     String updateCustomerAccount(Long id, String uuid, CustomerAccountRecieveDTO customerAccountRecieveDTO);
 
     String deleteCustomer(String uuid, Long id);
+
+    CustomerAccountRecieveDTO findCustomerById(String uuid, Long id);
+
+    CustomerAllDetails findAllCustomerDetailsByCustomerId(Long customerId, String uuid);
 }

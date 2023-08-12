@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class CustomerConvertor {
@@ -55,4 +57,12 @@ public class CustomerConvertor {
         return customer;
     }
 
+    public static List<CustomerAccountRecieveDTO> mappedToCustomerAccountRecieve(Object[] customerAllDetails) {
+        List<CustomerAccountRecieveDTO> customerAccountRecieveDTOS = new ArrayList<>();
+        for (Object customerDetails : customerAllDetails) {
+            CustomerAccountRecieveDTO customerAccountRecieveDTO = new CustomerAccountRecieveDTO();
+//            customerAccountRecieveDTO.setCustomerName((Long)customerDetails[0]);
+        }
+        return customerAccountRecieveDTOS;
+    }
 }

@@ -45,4 +45,15 @@ public class BankBranchConvertor {
                 .build();
             return bankBranches;
     }
+
+    public static BankBranchSendarDTO mappedToBankBranch(Object[] customerAllDetails) {
+        BankBranchSendarDTO dto = new BankBranchSendarDTO();
+        dto.setId((Long) customerAllDetails[4]); // Assuming the index is 4 for id
+        dto.setBranchName((String) customerAllDetails[5]);
+        dto.setStreetAddress((String) customerAllDetails[6]);
+        dto.setCity((String) customerAllDetails[7]);
+        dto.setState((String) customerAllDetails[8]);
+        dto.setBranchPhoneNumber((String) customerAllDetails[9]);
+        return dto;
+    }
 }

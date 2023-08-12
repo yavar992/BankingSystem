@@ -1,6 +1,7 @@
 package myWallets.myWallets.DTO;
 
-import jakarta.persistence.PrePersist;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -9,22 +10,17 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import myWallets.myWallets.entity.BankAccountType;
 
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Data
-public class BankAccountDTO {
+public class CustomerAccountDetailsDTO {
 
-    @NotNull
-    @Size(min = 5,max = 30 ,message = "Invalid customerName [5-30 Characters only]")
+    private String accountNo;
+
     private String accountHolderName;
 
     private BankAccountType bankAccountType;
-    @NotNull
-    private Double balance;
 
-    @PrePersist
-    public void setBankAccountType(String bankAccountType) {
-        this.bankAccountType = BankAccountType.fromString(bankAccountType);
-    }
+    private Double balance;
 }

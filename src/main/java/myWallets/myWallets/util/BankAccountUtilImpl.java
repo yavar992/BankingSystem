@@ -2,6 +2,9 @@ package myWallets.myWallets.util;
 
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.BankAccountDTO;
+import myWallets.myWallets.DTO.BankBranchDTO;
+import myWallets.myWallets.DTO.CustomerAccountDetailsDTO;
+import myWallets.myWallets.DTO.CustomerAllDetails;
 import myWallets.myWallets.constant.HappyBankUtilMethods;
 import myWallets.myWallets.constant.StatusCode;
 import myWallets.myWallets.convertor.BankAccountConvertor;
@@ -20,6 +23,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,7 +59,7 @@ public class BankAccountUtilImpl implements BankAccountUtil{
             BankAccount bankAccounts = bankAccountRepo.findBankAccountById(1L);
             log.info("bankAccount: " + bankAccounts);
             BankBranches bankBranches = bankBranchRepo.findById(branchId)
-                    .orElseThrow(()->new BankBranchesNotFoundException("Branch Not Found"));
+                    .orElseThrow(()->new BankBranchesNotFoundException("Branch Not Found for branchId: " + branchId));
             customer.setBankBranches(bankBranches);
             customerRepo.saveAndFlush(customer);
             log.info("bankBranches " + bankBranches);
@@ -72,6 +76,7 @@ public class BankAccountUtilImpl implements BankAccountUtil{
             throw e;
         }
     }
+
 }
 
 

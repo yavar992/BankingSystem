@@ -26,4 +26,6 @@ public interface BankBranchService {
     void updateBankBranch(BankBranches updateMessage);
 
     boolean branchAlreadyExist(String branchEmail, String branchPhoneNumber);
+
+    BankBranches getBankBranchesByIFSCCode(String uuid, String ifscCode);
 }

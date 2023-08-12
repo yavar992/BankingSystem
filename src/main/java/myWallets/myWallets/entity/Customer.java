@@ -5,14 +5,12 @@ package myWallets.myWallets.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalDate;
@@ -71,12 +69,14 @@ public class Customer {
     private boolean isVerified; // Whether the user's identity is verified or not
 
 
-    @OneToMany( fetch = FetchType.LAZY ,cascade = CascadeType.ALL , orphanRemoval = true)
+    @OneToMany( fetch = FetchType.LAZY ,cascade = CascadeType.ALL )
     @JsonIgnore
     private List<CustomerAccountDetails> customerAccountDetails;
 
-    @ManyToOne(fetch = FetchType.LAZY , cascade = {CascadeType.ALL , CascadeType.REMOVE})
+    @ToString.Exclude
+    @ManyToOne
     @JoinColumn(name = "bank_branch_id")
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private BankBranches bankBranches;
 
     @PrePersist

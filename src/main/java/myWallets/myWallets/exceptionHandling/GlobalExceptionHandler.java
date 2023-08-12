@@ -83,4 +83,41 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorMessage errorMessage = new ErrorMessage(statusCode , message , path);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
     }
+
+    @ExceptionHandler(CustomerAccountException.class)
+    public ResponseEntity<ErrorMessage> noCustomerDetailsFound(CustomerAccountException e , WebRequest webRequest){
+        Integer statusCode = HttpStatus.UNAUTHORIZED.value();
+        String message = e.getMessage();
+        String path = webRequest.getDescription(false);
+        ErrorMessage errorMessage = new ErrorMessage(statusCode , message , path);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+    }
+
+
+    @ExceptionHandler(TransactionException.class)
+    public ResponseEntity<ErrorMessage> transactionException(TransactionException e , WebRequest webRequest){
+        Integer statusCode = HttpStatus.UNAUTHORIZED.value();
+        String message = e.getMessage();
+        String path = webRequest.getDescription(false);
+        ErrorMessage errorMessage = new ErrorMessage(statusCode , message , path);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+    }
+
+    @ExceptionHandler(InsufficientBalanceException.class)
+    public ResponseEntity<ErrorMessage> insufficientAmountException(InsufficientBalanceException e , WebRequest webRequest){
+        Integer statusCode = HttpStatus.UNAUTHORIZED.value();
+        String message = e.getMessage();
+        String path = webRequest.getDescription(false);
+        ErrorMessage errorMessage = new ErrorMessage(statusCode , message , path);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+    }
+
+    @ExceptionHandler(IncorrectAccountNumber.class)
+    public ResponseEntity<ErrorMessage> incorrectAccountNumber(IncorrectAccountNumber e , WebRequest webRequest){
+        Integer statusCode = HttpStatus.UNAUTHORIZED.value();
+        String message = e.getMessage();
+        String path = webRequest.getDescription(false);
+        ErrorMessage errorMessage = new ErrorMessage(statusCode , message , path);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+    }
 }

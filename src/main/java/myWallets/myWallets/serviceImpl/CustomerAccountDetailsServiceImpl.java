@@ -2,31 +2,31 @@ package myWallets.myWallets.serviceImpl;
 
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.BankAccountDTO;
+import myWallets.myWallets.DTO.CustomerAccountDetailsDTO;
+import myWallets.myWallets.DTO.CustomerAccountRecieveDTO;
+import myWallets.myWallets.DTO.CustomerAllDetails;
 import myWallets.myWallets.constant.HappyBankUtilMethods;
-import myWallets.myWallets.constant.StatusCode;
+import myWallets.myWallets.convertor.BankAccountConvertor;
+import myWallets.myWallets.convertor.CustomerConvertor;
 import myWallets.myWallets.entity.*;
 import myWallets.myWallets.event.AccountOpenEvent;
 import myWallets.myWallets.exceptionHandling.BankBranchesNotFoundException;
-import myWallets.myWallets.exceptionHandling.LoginException;
-import myWallets.myWallets.exceptionHandling.UnverifiedCustomerException;
+import myWallets.myWallets.exceptionHandling.CustomerAccountException;
+import myWallets.myWallets.exceptionHandling.UserNotFoundException;
 import myWallets.myWallets.repository.*;
-import myWallets.myWallets.service.BankAccountService;
-import myWallets.myWallets.service.BankBranchService;
 import myWallets.myWallets.service.CustomerAccountDetailsService;
 import myWallets.myWallets.service.CustomerService;
-import myWallets.myWallets.validator.Validator;
-import myWallets.myWallets.validator.ValidatorUtils;
-import org.apache.catalina.LifecycleState;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
+@Transactional
 public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetailsService {
 
 
@@ -38,6 +38,8 @@ public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetails
 
     private final HappyBankUtilMethods happyBankUtilMethods;
 
+    private final CustomerRepo customerRepo;
+
 
 
 
@@ -47,7 +49,8 @@ public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetails
                                              CustomerService customerService,
                                              BankBranchRepo bankBranchRepo,
                                              BankAccountRepo bankAccountRepo ,
-                                             HappyBankUtilMethods happyBankUtilMethods
+                                             HappyBankUtilMethods happyBankUtilMethods ,
+                                             CustomerRepo customerRepo
     ) {
         this.customerAccountDetailsRepo = customerAccountDetailsRepo;
         this.applicationEventPublisher = applicationEventPublisher;
@@ -56,6 +59,7 @@ public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetails
         this.bankBranchRepo = bankBranchRepo;
         this.bankAccountRepo = bankAccountRepo;
         this.happyBankUtilMethods =happyBankUtilMethods;
+        this.customerRepo = customerRepo;
     }
 
     private final BankAccountRepo bankAccountRepo;
@@ -78,40 +82,78 @@ public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetails
     @Override
     public CustomerAccountDetails openAccount(String uuid, BankAccountDTO bankAccountDTO) {
         try {
-                happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
-                List<BankAccount> bankAccount = bankAccountRepo.findAll();
-                BankAccount bankAccount1 = bankAccount.get(0);
-                BankBranches bankBranches = bankBranchRepo.findById(bankAccountDTO.getBranchId())
-                        .orElseThrow(()->new BankBranchesNotFoundException("Branch Not Found"));
-             log.info("bankBranches " + bankBranches);
-            CustomerAccountDetails customerAccountDetails = CustomerAccountDetails.builder()
-                    .accountOpeningDate(ZonedDateTime.now())
-                    .bankAccountType(bankAccountDTO.getBankAccountType())
-                    .accountHolderName(bankAccountDTO.getAccountHolderName().toUpperCase())
-                    .accountNo("HYBK0"+bankBranches.getBranchCode()+ Validator.accountLast4digits())
-//                     .bankAccount(bankAccount)
-                    .balance(bankAccountDTO.getBalance())
-                    // .customer(customer)
-                    .currency("INR")
-                    .accountCloseDate(null)
-                    .Status("ACTIVE")
-//                    .bankBranches(bankBranches)
-                    .build();
-            return customerAccountDetailsRepo.saveAndFlush(customerAccountDetails);
+//                happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+//                List<BankAccount> bankAccount = bankAccountRepo.findAll();
+//                BankAccount bankAccount1 = bankAccount.get(0);
+//                BankBranches bankBranches = bankBranchRepo.findById(bankAccountDTO.getBranchId())
+//                        .orElseThrow(()->new BankBranchesNotFoundException("Branch Not Found"));
+//             log.info("bankBranches " + bankBranches);
+//            CustomerAccountDetails customerAccountDetails = CustomerAccountDetails.builder()
+//                    .accountOpeningDate(ZonedDateTime.now())
+//                    .bankAccountType(bankAccountDTO.getBankAccountType())
+//                    .accountHolderName(bankAccountDTO.getAccountHolderName().toUpperCase())
+//                    .accountNo("HYBK0"+bankBranches.getBranchCode()+ Validator.accountLast4digits())
+////                     .bankAccount(bankAccount)
+//                    .balance(bankAccountDTO.getBalance())
+//                    // .customer(customer)
+//                    .currency("INR")
+//                    .accountCloseDate(null)
+//                    .Status("ACTIVE")
+////                    .bankBranches(bankBranches)
+//                    .build();
+//            return customerAccountDetailsRepo.saveAndFlush(customerAccountDetails);
         }catch (Exception e){
             log.error("An error occurred while opening an account: " + e.getMessage());
             throw e;
         }
+        return null;
     }
 
     @Override
     public void saveCustomer(CustomerAccountDetails bankAccount) {
-
+        Boolean checkIfCustomerAccountTypeAlreadyExist = accountAlreadyExist(bankAccount.getBankAccountType().toString());
+        if (checkIfCustomerAccountTypeAlreadyExist){
+            throw new CustomerAccountException("you already have a saving type account in our bank plz continue with old account or you can open new deposit or any other type bank in our bank");
+        }
         AccountOpenEvent accountOpenEvent = new AccountOpenEvent(bankAccount);
         applicationEventPublisher.publishEvent(accountOpenEvent);
         customerAccountDetailsRepo.saveAndFlush(bankAccount);
     }
 
+    @Override
+    public boolean accountAlreadyExist(String bankAccountType) {
+        CustomerAccountDetails customerAccountDetails = customerAccountDetailsRepo.findByAccountType(bankAccountType);
+        return customerAccountDetails!=null;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CustomerAccountDetailsDTO> findCustomerAccountDetails(String uuid, Long customerId) {
+        try {
+          happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+            Optional<CustomerAccountDetails> customerAccountDetails = customerAccountDetailsRepo.findByCustomerId(customerId);
+            if (customerAccountDetails==null || customerAccountDetails.isEmpty()){
+                throw new CustomerAccountException("No account exists for the customerId" + customerId);
+            }
+            return customerAccountDetails.stream().map(BankAccountConvertor::convertCustomerAccountDetailsToCustomerAccountDetailsDTO).collect(Collectors.toList());
+        }catch (Exception e){
+            throw e;
+        }
+    }
+
+    @Override
+    public CustomerAccountDetailsDTO findCustomerByAccountNo(String uuid, String accountNo) {
+        try {
+            happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+            CustomerAccountDetails customerAccountDetails = customerAccountDetailsRepo.findByAccountNumber(accountNo);
+            if (customerAccountDetails==null){
+                throw new CustomerAccountException("No account found for accountNo " + accountNo);
+            }
+            return BankAccountConvertor.convertCustomerAccountDetailsToCustomerAccountDetailsDTO(customerAccountDetails);
+        }catch (Exception e){
+            throw e;
+        }
+    }
 
 
 }

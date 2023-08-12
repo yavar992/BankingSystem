@@ -12,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 @Entity
 @NoArgsConstructor
@@ -61,6 +62,9 @@ public class CustomerAccountDetails {
 
     @ManyToOne(fetch = FetchType.LAZY , cascade = CascadeType.ALL)
     BankAccount bankAccount;
+
+    @OneToMany( mappedBy = "customerAccountDetails" , fetch = FetchType.LAZY , cascade = CascadeType.ALL ,orphanRemoval = true)
+    List<Transaction> transactions;
 
     public void saveCustomer(){
         

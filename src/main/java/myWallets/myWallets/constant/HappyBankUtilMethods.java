@@ -1,16 +1,9 @@
 package myWallets.myWallets.constant;
 
 import myWallets.myWallets.DTO.CustomerAccountRecieveDTO;
-import myWallets.myWallets.entity.BankAccount;
-import myWallets.myWallets.entity.CurrentUserSession;
-import myWallets.myWallets.entity.Customer;
-import myWallets.myWallets.exceptionHandling.BankNotFoundException;
-import myWallets.myWallets.exceptionHandling.LoginException;
-import myWallets.myWallets.exceptionHandling.UnverifiedCustomerException;
-import myWallets.myWallets.exceptionHandling.UserNotFoundException;
-import myWallets.myWallets.repository.BankAccountRepo;
-import myWallets.myWallets.repository.CurrentUserSessionRepo;
-import myWallets.myWallets.repository.CustomerRepo;
+import myWallets.myWallets.entity.*;
+import myWallets.myWallets.exceptionHandling.*;
+import myWallets.myWallets.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +20,12 @@ public class HappyBankUtilMethods {
     CurrentUserSessionRepo currentUserSessionRepo;
 
     @Autowired
+    BankBranchRepo bankBranchRepo;
+
+    @Autowired
+    CustomerAccountDetailsRepo customerAccountDetailsRepo;
+
+    @Autowired
     BankAccountRepo bankAccountRepo;
     public HappyBankUtilMethods(CustomerRepo customerRepo) {
         this.customerRepo = customerRepo;
@@ -41,6 +40,24 @@ public class HappyBankUtilMethods {
         Customer customer = customerOptional.get();
         return customer;
     }
+
+    public  BankBranches validateBankBranch(String IFSCCode){
+        Optional<BankBranches> bankBranches1 = bankBranchRepo.findByIFSCCode(IFSCCode);
+        if (bankBranches1 == null || bankBranches1.isEmpty()){
+            throw new BankBranchesNotFoundException("Bank Branch not found");
+        }
+        BankBranches bankBranches = bankBranches1.get();
+        return bankBranches;
+    }
+
+    public CustomerAccountDetails validateCustomerAccountDetails(String accountNumber){
+        CustomerAccountDetails customerAccountDetails1 = customerAccountDetailsRepo.findByAccountNumber(accountNumber);
+        if (customerAccountDetails1==null){
+            throw new CustomerAccountException("Could not find customer account details for account " + accountNumber);
+        }
+        return customerAccountDetails1;
+    }
+
 
     public void validateCustomerSessoion(String uuid){
         Optional<CurrentUserSession> currentUserSession = currentUserSessionRepo.findByUUID(uuid);
@@ -67,4 +84,9 @@ public class HappyBankUtilMethods {
     }
 
 
+    public CustomerAccountDetails validatCustomerAccountByCustomerId(Long id) {
+        CustomerAccountDetails customerAccountDetails = customerAccountDetailsRepo.findById(id)
+                .orElseThrow(()->new CustomerAccountException("No such customer account found for customerId" + id));
+        return customerAccountDetails;
+    }
 }

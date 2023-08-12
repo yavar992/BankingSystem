@@ -5,6 +5,8 @@ import myWallets.myWallets.DTO.CustomerDTO;
 import myWallets.myWallets.DTO.OptDTO;
 import myWallets.myWallets.entity.Customer;
 import myWallets.myWallets.event.CustomerEvent;
+import myWallets.myWallets.exceptionHandling.UserAlreadyLoggedIn;
+import myWallets.myWallets.exceptionHandling.UserNotFoundException;
 import myWallets.myWallets.repository.CustomerRepo;
 import myWallets.myWallets.service.CustomerService;
 import myWallets.myWallets.util.EmailSendarUtil;
@@ -15,9 +17,11 @@ import org.springframework.context.ApplicationEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -40,6 +44,7 @@ public class CustomerEventListner  {
             String customerName = customer.getCustomerName();
             String email = customer.getEmail();
             String otp =  String.valueOf(Validator.otp());
+            System.out.println("otp ->" + otp);
             emailSendarUtil.sendEmailWithMultipleBodyLine(email, Arrays.asList( "Dear " + customerName + " \n\n" +
                     "Thank you for choosing Happy Bank as your financial partner. We're excited to have you onboard! \n\n" +
                     "To complete the registration process and activate your account, please use the following One-Time Password (OTP):\n\n" +
@@ -55,5 +60,15 @@ public class CustomerEventListner  {
         }catch (Exception e){
             log.info("cannot send the sms and cannot save otp to db due to "+e.getMessage());
         }
+    }
+
+
+    //send otp for the three day
+//    @Scheduled(cron = "0 */2 * ? * *")
+    public void sendEmail(){
+        List<String> email = customerRepo.findUnverifiedCustomer();
+       for (String emails : email){
+
+       }
     }
 }

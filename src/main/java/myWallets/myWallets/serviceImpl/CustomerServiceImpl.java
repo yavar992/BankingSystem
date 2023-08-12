@@ -2,9 +2,10 @@ package myWallets.myWallets.serviceImpl;
 
 import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
-import myWallets.myWallets.DTO.CustomerAccountRecieveDTO;
-import myWallets.myWallets.DTO.CustomerDTO;
+import myWallets.myWallets.DTO.*;
 import myWallets.myWallets.constant.HappyBankUtilMethods;
+import myWallets.myWallets.convertor.BankAccountConvertor;
+import myWallets.myWallets.convertor.BankBranchConvertor;
 import myWallets.myWallets.convertor.CustomerConvertor;
 import myWallets.myWallets.entity.CurrentUserSession;
 import myWallets.myWallets.entity.Customer;
@@ -15,6 +16,7 @@ import myWallets.myWallets.exceptionHandling.UserNotFoundException;
 import myWallets.myWallets.repository.CurrentUserSessionRepo;
 import myWallets.myWallets.repository.CustomerRepo;
 import myWallets.myWallets.service.CustomerService;
+import myWallets.myWallets.util.BankAccountUtil;
 import myWallets.myWallets.validator.Validator;
 import myWallets.myWallets.validator.ValidatorUtils;
 import org.springframework.context.ApplicationEventPublisher;
@@ -22,6 +24,7 @@ import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.LoginException;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,10 +39,12 @@ public class CustomerServiceImpl implements CustomerService {
     ApplicationEventPublisher applicationEventPublisher;
     CurrentUserSessionRepo currentUserSessionRepo ;
 
+
     public CustomerServiceImpl(CustomerRepo customerRepo,
                                HappyBankUtilMethods happyBankUtilMethods,
                                ApplicationEventPublisher applicationEventPublisher,
-                               CurrentUserSessionRepo currentUserSessionRepo) {
+                               CurrentUserSessionRepo currentUserSessionRepo
+                                        ) {
         this.customerRepo = customerRepo;
         this.happyBankUtilMethods = happyBankUtilMethods;
         this.applicationEventPublisher = applicationEventPublisher;
@@ -271,6 +276,30 @@ public class CustomerServiceImpl implements CustomerService {
         }
         return "customer deleted successfully";
 
+    }
+
+    @Override
+    public CustomerAccountRecieveDTO findCustomerById(String uuid, Long id) {
+        Customer customer = customerRepo.findById(id).orElseThrow(()->new UserNotFoundException("Customer not found for id" + id));
+        return CustomerConvertor.customerToCustomerDTO(customer);
+    }
+
+    @Override
+    public CustomerAllDetails findAllCustomerDetailsByCustomerId(Long customerId, String uuid) {
+        try {
+            happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+            Object[] customerAllDetails = customerRepo.findbyCustomerId(customerId);
+            if (customerAllDetails==null || customerAllDetails.length==0){
+                throw new UserNotFoundException("No customer found for the accountId " + customerId);
+            }
+            CustomerAccountDetailsDTO customerAccountDetailsDTO = BankAccountConvertor.mappedToCustomerAccountDetails(customerAllDetails);
+            BankBranchSendarDTO bankBranchSendarDTO = BankBranchConvertor.mappedToBankBranch(customerAllDetails);
+            List<CustomerAccountRecieveDTO> customerAccountRecieveDTOS = CustomerConvertor.mappedToCustomerAccountRecieve(customerAllDetails);
+            CustomerAllDetails customerAllDetails1 =new CustomerAllDetails(customerAccountDetailsDTO , customerAccountRecieveDTOS ,bankBranchSendarDTO);
+            return customerAllDetails1;
+        }catch (Exception e){
+            throw e;
+        }
     }
 
 
