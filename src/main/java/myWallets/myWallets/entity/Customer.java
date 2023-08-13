@@ -68,7 +68,6 @@ public class Customer {
     private boolean isActive = true; // Whether the account is active or not
     private boolean isVerified; // Whether the user's identity is verified or not
 
-
     @OneToMany( fetch = FetchType.LAZY ,cascade = CascadeType.ALL )
     @JsonIgnore
     private List<CustomerAccountDetails> customerAccountDetails;
@@ -78,6 +77,12 @@ public class Customer {
     @JoinColumn(name = "bank_branch_id")
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private BankBranches bankBranches;
+
+    @OneToOne
+    @JoinColumn( name = "currentUserSessions_Id")
+    @JsonIgnore
+    @ToString.Exclude
+    private CurrentUserSession currentUserSession;
 
     @PrePersist
     public void TranslateNameAndAddressIntoUpparCase(){

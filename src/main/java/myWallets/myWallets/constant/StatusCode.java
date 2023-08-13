@@ -40,7 +40,7 @@ public enum StatusCode {
     USER_IS_NOT_LOGGED_IN(501,"You are not logged in"),
     BRANCH_NOT_EXIST(404 ,"Branch not found for  the id "),
 
-    WRONG_CREDENTIAL(401, "Wrong credentials Either password or email is worng"),
+    WRONG_CREDENTIAL(401, "Wrong credentials Either password or email is wrong"),
     CUSTOMER_NOT_FOUND(404,"Customer not found");
 
 

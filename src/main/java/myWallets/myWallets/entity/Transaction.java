@@ -29,6 +29,7 @@ public class Transaction {
     @NotNull
     private String accountNumber;
 
+
     @ManyToOne(fetch = FetchType.LAZY)
     private CustomerAccountDetails customerAccountDetails;
 

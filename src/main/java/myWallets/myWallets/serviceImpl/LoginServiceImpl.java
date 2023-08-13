@@ -1,6 +1,7 @@
 package myWallets.myWallets.serviceImpl;
 
 import com.sun.jdi.event.ExceptionEvent;
+import jakarta.persistence.GeneratedValue;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.ForgetPasswordDTO;
@@ -48,7 +49,7 @@ public class LoginServiceImpl implements LoginService {
             Customer existingUser = customerService.getCustomerByEmail(login.getEmail());
             log.info("existing user " + existingUser);
             if (existingUser == null) {
-                throw new LoginException("you are not registered plz registered yourself to login");
+                throw new LoginException("you are not registered plz registered yourself to login ");
             }
             if (existingUser != null && !existingUser.isVerified()) {
                 throw new LoginException("Your account has not verified yet plz verifiy your account to login");
@@ -64,8 +65,14 @@ public class LoginServiceImpl implements LoginService {
                 Long userId = existingUser.getId();
                 String UUID = java.util.UUID.randomUUID().toString();
                 LocalDateTime localDateTime = LocalDateTime.now();
-                CurrentUserSession currentUserSession1 = new CurrentUserSession(userId, UUID, localDateTime);
+                CurrentUserSession currentUserSession1 = new CurrentUserSession();
+                currentUserSession1.setLocalDateTime(localDateTime);
+                currentUserSession1.setUuid(UUID);
+                currentUserSession1.setUserId(userId);
+                currentUserSession1.setCustomer(existingUser);
                 currentUserSessionRepo.saveAndFlush(currentUserSession1);
+                existingUser.setCurrentUserSession(currentUserSession1);
+                customerRepo.saveAndFlush(existingUser);
                 return UUID;
             }
         } catch (Exception e) {

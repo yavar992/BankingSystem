@@ -1,6 +1,7 @@
 package myWallets.myWallets.util;
 
 import jakarta.annotation.PostConstruct;
+import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.service.BankBranchService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -11,6 +12,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
 @Service
+@Slf4j
 public class HelperClass {
 
 
@@ -23,12 +25,24 @@ public class HelperClass {
         System.out.println(bankBranchService.bankBranchesById(1l));
     }
 
-
     public static void main(String[] args) {
         LocalDateTime dateTime = LocalDateTime.now(); // Replace with your LocalDateTime object
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("ddMMyyyy");
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
         String formattedDate = dateTime.format(formatter);
         System.out.println(formattedDate);
+        Integer cvv = (int) ((Math.random()*900)+100);
+        System.out.println(cvv);
+        try {
+            infiniteRecursion();
+
+        }catch (Exception e){
+            log.error("Exception " + e.getStackTrace());
+            e.getStackTrace();
+        }
     }
 
+    public static void infiniteRecursion(){
+        System.out.println("infinite recursion");
+        infiniteRecursion();
+    }
 }

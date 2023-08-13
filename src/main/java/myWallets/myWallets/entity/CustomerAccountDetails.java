@@ -6,10 +6,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -18,7 +15,9 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Data
+@Getter
+@Setter
+@ToString
 public class CustomerAccountDetails {
 
     @Id
@@ -52,17 +51,22 @@ public class CustomerAccountDetails {
 
     private ZonedDateTime accountCloseDate;
 
-    @ManyToOne(fetch = FetchType.LAZY , cascade = CascadeType.ALL)
+    @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "customer_id")
+    @JsonIgnore
     Customer customer;
 
     @OneToOne(fetch = FetchType.LAZY , orphanRemoval = true)
     @JoinColumn(name = "atm_id")
+    @JsonIgnore
     ATM atm;
 
     @ManyToOne(fetch = FetchType.LAZY , cascade = CascadeType.ALL)
+    @JsonIgnore
     BankAccount bankAccount;
 
+    @ToString.Exclude
+    @JsonIgnore
     @OneToMany( mappedBy = "customerAccountDetails" , fetch = FetchType.LAZY , cascade = CascadeType.ALL ,orphanRemoval = true)
     List<Transaction> transactions;
 

@@ -120,4 +120,32 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorMessage errorMessage = new ErrorMessage(statusCode , message , path);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
     }
+
+    @ExceptionHandler(ATMAlreadyExist.class)
+    public ResponseEntity<ErrorMessage> atmAlradyExist(ATMAlreadyExist e , WebRequest webRequest){
+        Integer statusCode = HttpStatus.UNAUTHORIZED.value();
+        String message = e.getMessage();
+        String path = webRequest.getDescription(false);
+        ErrorMessage errorMessage = new ErrorMessage(statusCode , message , path);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+    }
+
+    @ExceptionHandler(InvalidAtmDetails.class)
+    public ResponseEntity<ErrorMessage> invalidAtmOtp(InvalidAtmDetails e , WebRequest webRequest){
+        Integer statusCode = HttpStatus.UNAUTHORIZED.value();
+        String message = e.getMessage();
+        String path = webRequest.getDescription(false);
+        ErrorMessage errorMessage = new ErrorMessage(statusCode , message , path);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+    }
+
+
+    @ExceptionHandler(ATMNotFound.class)
+    public ResponseEntity<ErrorMessage> atmNotFound(ATMNotFound e , WebRequest webRequest){
+        Integer statusCode = HttpStatus.UNAUTHORIZED.value();
+        String message = e.getMessage();
+        String path = webRequest.getDescription(false);
+        ErrorMessage errorMessage = new ErrorMessage(statusCode , message , path);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+    }
 }

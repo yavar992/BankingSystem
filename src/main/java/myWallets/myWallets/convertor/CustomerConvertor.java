@@ -30,7 +30,7 @@ public class CustomerConvertor {
                 .mobileNumber(customerDTO.getMobileNumber())
                 .createdDate(ZonedDateTime.now())
                 .password(customerDTO.getPassword())
-                .otp(String.valueOf(Validator.otp()))
+//                .otp(String.valueOf(Validator.otp()))
                 .isActive(true)
                 .build();
         return customer;

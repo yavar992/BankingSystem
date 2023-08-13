@@ -12,6 +12,17 @@ public interface Validator {
         return otp;
     }
 
+    public static Integer cvv(){
+        Integer cvv = (int) ((Math.random()*900)+100);
+        return cvv;
+    }
+
+    public static Long atmLast10Digits(){
+        Long atmLast10Digits = (long) otp()+accountLast4digits();
+        return atmLast10Digits;
+
+    }
+
     static Long accountLast4digits(){
         Long accountLast4digits = (long) ((Math.random() * 9000)+100);
         return accountLast4digits;
