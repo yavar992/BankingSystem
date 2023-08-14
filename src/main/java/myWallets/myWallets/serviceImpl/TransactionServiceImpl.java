@@ -4,11 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.CustomerAccountDetailsDTO;
 import myWallets.myWallets.DTO.TransactionDTO;
 import myWallets.myWallets.DTO.TransactionDebitDTO;
+import myWallets.myWallets.DTO.WithdrawalMoneyByAtmDTO;
 import myWallets.myWallets.constant.HappyBankUtilMethods;
-import myWallets.myWallets.entity.BankBranches;
-import myWallets.myWallets.entity.CustomerAccountDetails;
-import myWallets.myWallets.entity.Transaction;
+import myWallets.myWallets.entity.*;
 import myWallets.myWallets.exceptionHandling.*;
+import myWallets.myWallets.repository.AtmRepository;
 import myWallets.myWallets.repository.BankBranchRepo;
 import myWallets.myWallets.repository.CustomerAccountDetailsRepo;
 import myWallets.myWallets.repository.TransactionRepo;
@@ -38,6 +38,9 @@ public class TransactionServiceImpl implements TransactionService {
     HappyBankUtilMethods happyBankUtilMethods;
     @Autowired
     CustomerAccountDetailsRepo customerAccountDetailsRepo;
+
+    @Autowired
+    AtmRepository atmRepository;
 
     @Override
     public String creditMoneyToAccount(String uuid, TransactionDTO transactionDTO) {
@@ -147,5 +150,69 @@ public class TransactionServiceImpl implements TransactionService {
         }catch (Exception e){
             throw e;
         }
+    }
+
+    @Override
+    public String makePaymentByATM(String uuid, WithdrawalMoneyByAtmDTO withdrawalMoneyByAtmDTO) {
+        happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+       String atmNumber = withdrawalMoneyByAtmDTO.getCardNumber();
+       ATM atm = atmRepository.findByCardNumber(atmNumber);
+       log.info("ATM ::" + atm);
+       if (atm==null){
+           throw new ATMNotFound("No card number found for cardNumber " + atmNumber);
+       }
+        CustomerAccountDetails customerAccountDetails = getAccountDetailsByCardNumber(atmNumber);
+       log.info("customerAccountDetails " + customerAccountDetails);
+       Double balance = customerAccountDetails.getBalance();
+        Boolean isVerified = atm.isVerified();
+        if (!isVerified){
+            throw new InvalidAtmDetails("Plz verified you account first for generating your ATM Pin ");
+        }
+       LocalDate expirationDate = atm.getAtmExpirationDate();
+       String cvv = atm.getCvv();
+       if (expirationDate.compareTo(withdrawalMoneyByAtmDTO.getAtmExpirationDate())<0){
+            throw new CardExpirationException("your atm card has expired plz apply for new card");
+       }
+
+       if (!cvv.equals(withdrawalMoneyByAtmDTO.getCvv()) ||
+               !expirationDate.equals(withdrawalMoneyByAtmDTO.getAtmExpirationDate())
+                || !atm.getCardNumber().equals(withdrawalMoneyByAtmDTO.getCardNumber())
+       ){
+           throw new InvalidAtmDetails("Invalid card data");
+       }
+       if (cvv.equals(withdrawalMoneyByAtmDTO.getCvv()) &&
+               atm.getCardNumber().equals(withdrawalMoneyByAtmDTO.getCardNumber()) &&
+               expirationDate.equals(withdrawalMoneyByAtmDTO.getAtmExpirationDate())
+       ){
+           Transaction transaction = new Transaction();
+           if (withdrawalMoneyByAtmDTO.getBalance()>balance){
+               throw new InsufficientBalanceException("InSufficient Balance");
+           }
+           balance = balance- withdrawalMoneyByAtmDTO.getBalance();
+           customerAccountDetails.setBalance(balance);
+           customerAccountDetailsRepo.saveAndFlush(customerAccountDetails);
+           transaction.setTransactionDate(LocalDate.now());
+           transaction.setTransactionType("ATMCard");
+           transaction.setDescription(withdrawalMoneyByAtmDTO.getDescription());
+           transaction.setAmount(withdrawalMoneyByAtmDTO.getBalance());
+           transaction.setTransactionId(Validator.generateTransactionId());
+           transaction.setCustomerAccountDetails(customerAccountDetails);
+           transaction.setAccountNumber(customerAccountDetails.getAccountNo());
+           transactionRepo.saveAndFlush(transaction);
+       }
+        return "transaction Successfully";
+    }
+
+    @Override
+    public CustomerAccountDetails getAccountDetailsByCardNumber(String cardNumber) {
+        ATM atm = atmRepository.findByCardNumber(cardNumber);
+        if (atm==null){
+            throw new ATMNotFound("No such ATM Card exist for card number " + cardNumber);
+        }
+        CustomerAccountDetails customerAccountDetails = atm.getCustomerAccountDetails();
+        if (customerAccountDetails==null){
+            throw new CustomerAccountException("No such Customer Account found for card number " + cardNumber);
+        }
+        return customerAccountDetails;
     }
 }

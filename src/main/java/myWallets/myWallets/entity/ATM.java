@@ -1,13 +1,11 @@
 package myWallets.myWallets.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.DynamicUpdate;
 
 import java.time.LocalDate;
@@ -18,7 +16,9 @@ import java.time.ZonedDateTime;
 @Builder
 @DynamicUpdate
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
 public class ATM {
 
     @Id
@@ -38,12 +38,16 @@ public class ATM {
 
 //    @JsonFormat(shape = JsonFormat.Shape.STRING , pattern = "dd-MM-yyyy")
     private LocalDate atmIssueAt;
+    @JsonFormat(shape = JsonFormat.Shape.STRING , pattern = "dd-MM-yyyy")
     private LocalDate atmExpirationDate;
     private String pin;
     private boolean isVerified;
     private Long atmOtp;
 
+    @ToString.Exclude
     @OneToOne(cascade = CascadeType.ALL)
+    @JsonIgnore
     private CustomerAccountDetails customerAccountDetails;
+
 
 }

@@ -51,6 +51,7 @@ public class CustomerAccountDetails {
 
     private ZonedDateTime accountCloseDate;
 
+    @ToString.Exclude
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "customer_id")
     @JsonIgnore
@@ -61,6 +62,7 @@ public class CustomerAccountDetails {
     @JsonIgnore
     ATM atm;
 
+    @ToString.Exclude
     @ManyToOne(fetch = FetchType.LAZY , cascade = CascadeType.ALL)
     @JsonIgnore
     BankAccount bankAccount;
@@ -71,6 +73,6 @@ public class CustomerAccountDetails {
     List<Transaction> transactions;
 
     public void saveCustomer(){
-        
+
     }
 }

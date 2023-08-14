@@ -111,4 +111,6 @@ public class AtmController {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cannot generate PIN");
     }
+
+
 }

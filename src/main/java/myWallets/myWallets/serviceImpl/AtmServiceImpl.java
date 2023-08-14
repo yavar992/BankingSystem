@@ -42,7 +42,7 @@ public class AtmServiceImpl implements AtmService {
     @Autowired
     public ApplicationEventPublisher applicationEventPublisher;
 
-    private static final LocalDate atmExpirationDate = LocalDate.of(2030,1,1);
+    private static final LocalDate atmExpirationDate = LocalDate.now().plusYears(5);
     private static final LocalDate dateTime = LocalDate.from(LocalDateTime.now().plusDays(10)); // Replace with your LocalDateTime object
 
     @Override
@@ -59,7 +59,7 @@ public class AtmServiceImpl implements AtmService {
             atm.setAtmExpirationDate(atmExpirationDate);
             atm.setCustomerNameOnATM(customerAccountDetails.getAccountHolderName());
             atm.setCvv(String.valueOf(Validator.cvv()));
-            atm.setCardNumber("HYBK00"+Validator.atmLast10Digits());
+            atm.setCardNumber("HYBK00"+Validator.accountLast4digits() + Validator.otp()); //HYBK00 101891
             atm.setCustomerAccountDetails(customerAccountDetails);
             atm.setPin(null);
             atm.setVerified(false);
@@ -112,9 +112,14 @@ public class AtmServiceImpl implements AtmService {
       log.info("ATM " + atm);
       Long otp = atm.getAtmOtp();
       String cvv = atm.getCvv();
+      Long atmOTP = atm.getAtmOtp();
+
       if (activateAccountDTO.getOtp().equals(0) || activateAccountDTO.getCvv().length()==0){
           throw new InvalidOTPException("fields cannot be blank");
       }
+        if (atmOTP==null){
+            throw new InvalidAtmDetails("You have already activate your ATM ");
+        }
       if (!cvv.equals(activateAccountDTO.getCvv()) || !otp.equals(activateAccountDTO.getOtp())){
           throw new InvalidAtmDetails("Incorrect Data , Either cvv or otp is invalid");
       }

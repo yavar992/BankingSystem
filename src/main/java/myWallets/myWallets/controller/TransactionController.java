@@ -1,8 +1,11 @@
 package myWallets.myWallets.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.TransactionDTO;
 import myWallets.myWallets.DTO.TransactionDebitDTO;
+import myWallets.myWallets.DTO.WithdrawalMoneyByAtmDTO;
+import myWallets.myWallets.entity.CustomerAccountDetails;
 import myWallets.myWallets.service.TransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -61,6 +64,35 @@ public class TransactionController {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Transaction failed to transfer money ");
 
+    }
+
+    //WITHDRAWAL MONEY FROM THE ATM
+    @PostMapping("/debitByATM")
+    public ResponseEntity<?> withdrawMoneyByATM(@Valid @RequestParam("UUID") String UUID ,
+                                                @RequestBody WithdrawalMoneyByAtmDTO withdrawalMoneyByAtmDTO){
+        try {
+            String withdrawalMessage = transactionService.makePaymentByATM(UUID ,withdrawalMoneyByAtmDTO);
+            if (withdrawalMessage!=null){
+                return ResponseEntity.status(HttpStatus.OK).body("Transaction success");
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cannot make the payment via ATM");
+    }
+
+    //GET ACCOUNT DETAILS BY THE CARD NUMBER
+    @PostMapping("/getAccountDetailsByCardNumber")
+    private ResponseEntity<?> getAccountDetailsByCardNumber(@RequestParam("cardNumber") String cardNumber){
+        try {
+            CustomerAccountDetails cardAccountNumber = transactionService.getAccountDetailsByCardNumber(cardNumber);
+            if (cardAccountNumber!=null){
+                return ResponseEntity.status(HttpStatus.OK).body(cardAccountNumber);
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cannot get the customer account details by card Number");
     }
 
 }

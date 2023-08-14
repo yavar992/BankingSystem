@@ -12,4 +12,7 @@ public interface AtmRepository extends JpaRepository<ATM , Long> {
 
     @Query(value = "SELECT a.id , atmExpirationDate ,atmIssueAt , cardNumber , customerNameOnATM , cvv , isVerified , pin , atmOtp , customerAccountDetails_id FROM `atm` a LEFT JOIN customeraccountdetails cad ON a.customerAccountDetails_id = cad.id WHERE cad.accountNo = ?1", nativeQuery = true)
     ATM findByAccountNumber(String accountNumber);
+
+    @Query(value = "SELECT * FROM `atm` WHERE cardNumber =?1" ,nativeQuery = true)
+    ATM findByCardNumber(String cardNumber);
 }
