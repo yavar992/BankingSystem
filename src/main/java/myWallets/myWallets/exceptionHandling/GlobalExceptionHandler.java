@@ -157,4 +157,14 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         ErrorMessage errorMessage = new ErrorMessage(statusCode , message , path);
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
     }
+
+
+    @ExceptionHandler(NoTransactionException.class)
+    public ResponseEntity<ErrorMessage> noTransactionException(NoTransactionException e , WebRequest webRequest){
+        Integer statusCode = HttpStatus.UNAUTHORIZED.value();
+        String message = e.getMessage();
+        String path = webRequest.getDescription(false);
+        ErrorMessage errorMessage = new ErrorMessage(statusCode , message , path);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMessage);
+    }
 }

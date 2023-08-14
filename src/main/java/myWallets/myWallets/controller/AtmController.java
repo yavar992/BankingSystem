@@ -63,6 +63,7 @@ public class AtmController {
             , @RequestParam("accountNumber") String accountNumber
             , @Valid BindingResult bindingResult
                                              ){
+
         try {
             Map<String, String> validationRequest = new HashMap<>();
             if (bindingResult.hasErrors()) {

@@ -1,9 +1,11 @@
 package myWallets.myWallets.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import myWallets.myWallets.util.MaskData;
 
 import java.time.LocalDate;
 
@@ -27,10 +29,11 @@ public class Transaction {
     private Double amount;
     private String Description;
     @NotNull
+    @MaskData
     private String accountNumber;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnore
     private CustomerAccountDetails customerAccountDetails;
 
     @PrePersist

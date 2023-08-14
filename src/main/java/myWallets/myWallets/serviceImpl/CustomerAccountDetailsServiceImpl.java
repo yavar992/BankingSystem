@@ -111,9 +111,12 @@ public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetails
 
     @Override
     public void saveCustomer(CustomerAccountDetails bankAccount) {
-        Boolean checkIfCustomerAccountTypeAlreadyExist = accountAlreadyExist(bankAccount.getBankAccountType().toString());
-        log.info("chececkIf-->" + checkIfCustomerAccountTypeAlreadyExist);
-        if (checkIfCustomerAccountTypeAlreadyExist==true){
+
+        String customerEmail = bankAccount.getCustomer().getEmail();
+        BankAccountType newAccountType = bankAccount.getBankAccountType();
+        // Check if the customer already has an account of the same type
+        boolean accountAlreadyExists = accountAlreadyExist(customerEmail, newAccountType);
+        if (accountAlreadyExists) {
             throw new CustomerAccountException("you already have a saving type account in our bank plz continue with old account or you can open new deposit or any other type bank in our bank");
         }
         AccountOpenEvent accountOpenEvent = new AccountOpenEvent(bankAccount);
@@ -126,6 +129,10 @@ public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetails
         CustomerAccountDetails customerAccountDetails = customerAccountDetailsRepo.findByAccountType(bankAccountType);
         log.info("customerAccountDetails " + customerAccountDetails);
         return customerAccountDetails!=null;
+    }
+    public boolean accountAlreadyExist(String customerEmail, BankAccountType bankAccountType) {
+        CustomerAccountDetails existingAccount = customerAccountDetailsRepo.findByCustomerEmailAndBankAccountType(customerEmail, bankAccountType);
+        return existingAccount != null;
     }
 
     @Override

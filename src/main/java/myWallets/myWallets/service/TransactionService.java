@@ -4,6 +4,9 @@ import myWallets.myWallets.DTO.TransactionDTO;
 import myWallets.myWallets.DTO.TransactionDebitDTO;
 import myWallets.myWallets.DTO.WithdrawalMoneyByAtmDTO;
 import myWallets.myWallets.entity.CustomerAccountDetails;
+import myWallets.myWallets.entity.Transaction;
+
+import java.util.List;
 
 public interface TransactionService {
     String creditMoneyToAccount(String uuid, TransactionDTO transactionDTO);
@@ -15,4 +18,8 @@ public interface TransactionService {
     String makePaymentByATM(String uuid, WithdrawalMoneyByAtmDTO withdrawalMoneyByAtmDTO);
 
     CustomerAccountDetails getAccountDetailsByCardNumber(String cardNumber);
+
+    List<Transaction> getAllTransaction();
+
+    List<Transaction> getTransactionsByAccountNumber(String uuid, String accountNumber);
 }

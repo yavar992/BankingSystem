@@ -27,4 +27,10 @@ public interface CustomerAccountDetailsRepo extends JpaRepository<CustomerAccoun
     @Query(value = "SELECT cad.id , cad.Status ,cad.accountCloseDate , cad.accountHolderName , cad.accountNo ,cad.accountOpeningDate , cad.bankAccountType , cad.balance ,cad.currency, cad.atm_id ,\n" +
             "cad.bankAccount_id , cad.customer_id FROM `customer` c LEFT JOIN customeraccountdetails cad ON c.id =cad.customer_id LEFT JOIN atm a ON cad.id =a.customerAccountDetails_id WHERE a.cardNumber = ?1" ,nativeQuery = true)
     CustomerAccountDetails findByCustomerATMNumber(String atmNumber);
+
+    @Query(value = "SELECT c.email FROM `customeraccountdetails` cad LEFT JOIN customer c ON cad.customer_id =c.id WHERE c.email =?1",nativeQuery = true)
+    String findCustomerDetailsByCustomerEmail(String email);
+
+
+    CustomerAccountDetails findByCustomerEmailAndBankAccountType(String customerEmail, BankAccountType bankAccountType);
 }

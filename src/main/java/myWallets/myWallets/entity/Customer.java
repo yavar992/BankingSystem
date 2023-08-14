@@ -78,7 +78,7 @@ public class Customer {
     @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
     private BankBranches bankBranches;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn( name = "currentUserSessions_Id")
     @JsonIgnore
     @ToString.Exclude

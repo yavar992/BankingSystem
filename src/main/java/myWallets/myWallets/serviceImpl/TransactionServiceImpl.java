@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -214,5 +215,24 @@ public class TransactionServiceImpl implements TransactionService {
             throw new CustomerAccountException("No such Customer Account found for card number " + cardNumber);
         }
         return customerAccountDetails;
+    }
+
+    @Override
+    public List<Transaction> getAllTransaction() {
+        List<Transaction> transactions = transactionRepo.findAll();
+        if (transactions == null) {
+            throw new NoTransactionException("Empty list of transactions");
+        }
+        return transactions;
+    }
+
+    @Override
+    public List<Transaction> getTransactionsByAccountNumber(String uuid, String accountNumber) {
+        happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+        List<Transaction> transactions = transactionRepo.findByAccountNumber(accountNumber);
+        if (transactions == null || transactions.isEmpty())  {
+            throw new  NoTransactionException("No transaction found for accountNumber " + accountNumber);
+        }
+        return transactions;
     }
 }

@@ -46,4 +46,6 @@ public interface CustomerService {
     CustomerAccountRecieveDTO findCustomerById(String uuid, Long id);
 
     CustomerAllDetails findAllCustomerDetailsByCustomerId(Long customerId, String uuid);
+
+    String deleteCustomerByUUID(String uuid);
 }

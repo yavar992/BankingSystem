@@ -112,12 +112,11 @@ public class AtmServiceImpl implements AtmService {
       log.info("ATM " + atm);
       Long otp = atm.getAtmOtp();
       String cvv = atm.getCvv();
-      Long atmOTP = atm.getAtmOtp();
 
       if (activateAccountDTO.getOtp().equals(0) || activateAccountDTO.getCvv().length()==0){
           throw new InvalidOTPException("fields cannot be blank");
       }
-        if (atmOTP==null){
+        if (otp==null){
             throw new InvalidAtmDetails("You have already activate your ATM ");
         }
       if (!cvv.equals(activateAccountDTO.getCvv()) || !otp.equals(activateAccountDTO.getOtp())){

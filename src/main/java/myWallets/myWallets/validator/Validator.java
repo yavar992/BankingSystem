@@ -24,7 +24,7 @@ public interface Validator {
     }
 
     static Long accountLast4digits(){
-        Long accountLast4digits = (long) ((Math.random() * 9000)+100);
+        Long accountLast4digits = (long) ((Math.random() * 9000)+1000);
         return accountLast4digits;
     }
 

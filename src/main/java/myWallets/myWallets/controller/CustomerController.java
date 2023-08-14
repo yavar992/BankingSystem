@@ -233,4 +233,17 @@ public class CustomerController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cannot get the all details of customer ");
     }
 
+    //DELETE CUSTOMER BY UUID
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteCustomer(@RequestParam("UUID")String UUID){
+        try {
+            String deletedMessage = customerService.deleteCustomerByUUID(UUID);
+            if (deletedMessage!=null){
+                return ResponseEntity.status(HttpStatus.OK).body("Customer deleted successfully");
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.OK).body("Cannot delete the customer ");
+    }
 }

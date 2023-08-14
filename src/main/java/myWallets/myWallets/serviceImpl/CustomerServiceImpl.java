@@ -302,6 +302,13 @@ public class CustomerServiceImpl implements CustomerService {
         }
     }
 
+    @Override
+    public String deleteCustomerByUUID(String uuid) {
+        Customer customer = happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+        customerRepo.delete(customer);
+        return "Customer deleted successfully";
+    }
+
 
 }
 

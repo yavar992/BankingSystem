@@ -6,10 +6,13 @@ import myWallets.myWallets.DTO.TransactionDTO;
 import myWallets.myWallets.DTO.TransactionDebitDTO;
 import myWallets.myWallets.DTO.WithdrawalMoneyByAtmDTO;
 import myWallets.myWallets.entity.CustomerAccountDetails;
+import myWallets.myWallets.entity.Transaction;
 import myWallets.myWallets.service.TransactionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/transactions")
@@ -95,4 +98,30 @@ public class TransactionController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cannot get the customer account details by card Number");
     }
 
+    @GetMapping("/getAllTransaction")
+    public ResponseEntity<?> getAllTransaction(){
+        try {
+            List<Transaction> transactions = transactionService.getAllTransaction();
+            if (transactions!=null && !transactions.isEmpty()){
+                return ResponseEntity.status(HttpStatus.OK).body(transactions);
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cannot get the transaction details ");
+    }
+
+    //GET TRANSACTION BY ACCOUNT NUMBER
+    @GetMapping("/getTransactionByAccountNumber")
+    private ResponseEntity<?> getTransactionByAccountNumber(@RequestParam("UUID") String UUID , @RequestParam("accountNumber") String accountNumber){
+        try {
+            List<Transaction> transactions = transactionService.getTransactionsByAccountNumber(UUID ,accountNumber);
+            if (transactions!=null && !transactions.isEmpty()){
+                return ResponseEntity.status(HttpStatus.OK).body(transactions);
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot get transaction by account number");
+    }
 }
