@@ -6,6 +6,7 @@ import myWallets.myWallets.DTO.WithdrawalMoneyByAtmDTO;
 import myWallets.myWallets.entity.CustomerAccountDetails;
 import myWallets.myWallets.entity.Transaction;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface TransactionService {
@@ -22,4 +23,6 @@ public interface TransactionService {
     List<Transaction> getAllTransaction();
 
     List<Transaction> getTransactionsByAccountNumber(String uuid, String accountNumber);
+
+    List<Transaction> getTransactionBetweenDates(String uuid, String accountNumber, LocalDate startingDate, LocalDate endDate);
 }

@@ -235,4 +235,15 @@ public class TransactionServiceImpl implements TransactionService {
         }
         return transactions;
     }
+
+    @Override
+    public List<Transaction> getTransactionBetweenDates(String uuid, String accountNumber, LocalDate startingDate, LocalDate endDate) {
+        happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+        List<Transaction> transactions = transactionRepo.findByTransactionStartAndEndDate(accountNumber ,startingDate ,endDate);
+        if (transactions == null || transactions.isEmpty())  {
+            throw new  NoTransactionException("No transaction found for accountNumber " + accountNumber);
+        }
+        return transactions;
+    }
 }
+

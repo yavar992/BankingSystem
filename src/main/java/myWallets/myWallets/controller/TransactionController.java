@@ -8,10 +8,13 @@ import myWallets.myWallets.DTO.WithdrawalMoneyByAtmDTO;
 import myWallets.myWallets.entity.CustomerAccountDetails;
 import myWallets.myWallets.entity.Transaction;
 import myWallets.myWallets.service.TransactionService;
+import org.hibernate.validator.constraints.UUID;
+import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -123,5 +126,21 @@ public class TransactionController {
             return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot get transaction by account number");
+    }
+
+    //GET All Transactions Between Dates
+    @PostMapping("/getTransactionBetweenDate")
+    private ResponseEntity<?> getTransactionBetweenDate(@RequestParam("UUID") String UUID
+            , @RequestParam("accountNumber") String accountNumber , @RequestParam("startingDate") LocalDate startingDate ,
+               @RequestParam("endDate") LocalDate endDate){
+        try {
+            List<Transaction> transactions = transactionService.getTransactionBetweenDates(UUID , accountNumber , startingDate ,endDate);
+            if (transactions!=null && !transactions.isEmpty()){
+                return ResponseEntity.status(HttpStatus.OK).body(transactions);
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot get transaction between dates");
     }
 }
