@@ -57,8 +57,7 @@ public class CustomerAccountDetails {
     @JsonIgnore
     Customer customer;
 
-    @OneToOne(fetch = FetchType.LAZY , orphanRemoval = true)
-    @JoinColumn(name = "atm_id")
+    @OneToOne(fetch = FetchType.LAZY , cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     ATM atm;
 
@@ -75,6 +74,11 @@ public class CustomerAccountDetails {
     @ToString.Exclude
     @OneToOne(mappedBy = "account" , fetch = FetchType.LAZY , cascade = CascadeType.ALL , orphanRemoval =true)
     private Beneficiary beneficiary;
+
+    @ToString.Exclude
+    @OneToOne(mappedBy = "owner" , cascade = CascadeType.ALL , fetch = FetchType.LAZY,orphanRemoval = true)
+    private Wallet wallet;
+
     public void saveCustomer(){
 
     }

@@ -7,6 +7,7 @@ import myWallets.myWallets.DTO.WithdrawalMoneyByAtmDTO;
 import myWallets.myWallets.entity.CustomerAccountDetails;
 import myWallets.myWallets.entity.Transaction;
 import myWallets.myWallets.service.TransactionService;
+import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -155,4 +156,51 @@ public class TransactionController {
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot withdrawal money ");
     }
+
+    //WALLET SECTION
+    //transfer money to wallet from bankAccount
+    @PostMapping("/addedMoneyToWallet")
+    public ResponseEntity<?>transferMoneyToWallet(@RequestParam("UUID") String UUID , @RequestBody TransactionDTO transactionDTO){
+        try {
+            String moneyTransferMessage = transactionService.addMoneyToWallet(UUID , transactionDTO);
+            if (moneyTransferMessage!=null){
+                return ResponseEntity.status(HttpStatus.OK).body("Success ! balance added to wallet");
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot transfer money from bank account to wallet");
+    }
+
+    //trasnfer money to bank account from the wallet
+    @PostMapping("/transferFromWallet")
+    public ResponseEntity<?> transferMoneyFromWalletToBankAccount(@RequestParam("UUID") String UUID ,
+                                                                  @RequestParam("recieverAccountNumber") String recieverAccountNumber ,
+                                                                  @RequestBody TransactionDTO transactionDTO){
+        try {
+            String transactionMessage = transactionService.transferMoneyToBankFromWallet(UUID ,recieverAccountNumber , transactionDTO);
+            if (transactionMessage!=null){
+                return ResponseEntity.status(HttpStatus.OK).body("Transaction successful ");
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot transfer money from wallet");
+    }
+
+
+    //MAKE PAYMENT BY WALLET
+    @PostMapping("/makePaymentByWallet")
+    public ResponseEntity<?> makePaymentByWallet(@RequestParam("UUID") String UUID , @RequestBody TransactionDTO transactionDTO){
+        try {
+            String transactionMessage = transactionService.makePaymentByWallet(UUID , transactionDTO);
+            if (transactionMessage!=null){
+                return ResponseEntity.status(HttpStatus.OK).body("Payment Successful");
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot make payment by wallet");
+    }
+
 }

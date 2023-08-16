@@ -26,4 +26,10 @@ public interface TransactionService {
     List<Transaction> getTransactionBetweenDates(String uuid, String accountNumber, LocalDate startingDate, LocalDate endDate);
 
     String debitMoneyByBeneficiary(String uuid,  TransactionDTO beneficiaryTransactionDTO);
+
+    String addMoneyToWallet(String uuid, TransactionDTO transactionDTO);
+
+    String transferMoneyToBankFromWallet(String uuid, String recieverAccountNumber, TransactionDTO transactionDTO);
+
+    String makePaymentByWallet(String uuid, TransactionDTO transactionDTO);
 }

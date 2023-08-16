@@ -1,16 +1,15 @@
 package myWallets.myWallets.serviceImpl;
 
+import com.ctc.wstx.shaded.msv_core.reader.relax.core.ElementRuleWithHedgeState;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.*;
 import myWallets.myWallets.constant.HappyBankUtilMethods;
 import myWallets.myWallets.entity.*;
 import myWallets.myWallets.exceptionHandling.*;
-import myWallets.myWallets.repository.AtmRepository;
-import myWallets.myWallets.repository.BankBranchRepo;
-import myWallets.myWallets.repository.CustomerAccountDetailsRepo;
-import myWallets.myWallets.repository.TransactionRepo;
+import myWallets.myWallets.repository.*;
 import myWallets.myWallets.service.BankBranchService;
 import myWallets.myWallets.service.TransactionService;
+import myWallets.myWallets.service.WalletService;
 import myWallets.myWallets.validator.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +33,10 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Autowired
     HappyBankUtilMethods happyBankUtilMethods;
+
+    @Autowired
+    WalletRepo walletRepo;
+
     @Autowired
     CustomerAccountDetailsRepo customerAccountDetailsRepo;
 
@@ -279,6 +282,118 @@ public class TransactionServiceImpl implements TransactionService {
             transactionRepo.saveAndFlush(transaction);
         }
         return "Transaction created successfully";
+    }
+
+    @Override
+    public String addMoneyToWallet(String uuid, TransactionDTO transactionDTO) {
+        happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+        CustomerAccountDetails customerAccountDetails = happyBankUtilMethods.validateCustomerAccountDetails(transactionDTO.getAccountNumber());
+        Wallet wallet = customerAccountDetails.getWallet();
+        Double walletBalance = wallet.getBalance();
+        if (wallet==null){
+            throw new WalletException("No Wallet found for for " +transactionDTO.getAmount());
+        }
+        Double balance = customerAccountDetails.getBalance();
+        BankBranches bankBranches = happyBankUtilMethods.validateBankBranch(transactionDTO.getIfscCode());
+        if (balance<transactionDTO.getAmount()){
+            throw new InsufficientBalanceException("InSufficient Balance ");
+        }
+        if (!customerAccountDetails.getAccountNo().equals(transactionDTO.getAccountNumber()) &&
+                !bankBranches.getIFSCCode().equals(transactionDTO.getIfscCode())){
+            throw new CustomerAccountException("Incorrect Customer Account Details");
+        }
+        if (customerAccountDetails.getAccountNo().equals(transactionDTO.getAccountNumber()) &&
+                bankBranches.getIFSCCode().equals(transactionDTO.getIfscCode())){
+            customerAccountDetails.setBalance(balance-transactionDTO.getAmount());
+            customerAccountDetailsRepo.saveAndFlush(customerAccountDetails);
+            wallet.setBalance(walletBalance+transactionDTO.getAmount());
+            walletRepo.saveAndFlush(wallet);
+            Transaction transaction = new Transaction();
+            transaction.setTransactionDate(LocalDate.now());
+            transaction.setAmount(transactionDTO.getAmount());
+            transaction.setTransactionType("WALLET");
+            transaction.setTransactionId(Validator.generateTransactionId());
+            transaction.setAccountNumber(transactionDTO.getAccountNumber());
+            transaction.setDescription(transactionDTO.getDescription());
+            transaction.setCustomerAccountDetails(customerAccountDetails);
+            transactionRepo.saveAndFlush(transaction);
+        }
+        return "Balance successfully added to the wallet";
+    }
+
+    @Override
+    public String transferMoneyToBankFromWallet(String uuid, String recieverAccountNumber, TransactionDTO transactionDTO) {
+        happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+        String accountNumber = transactionDTO.getAccountNumber();
+        CustomerAccountDetails customerAccountDetails = happyBankUtilMethods.validateCustomerAccountDetails(accountNumber);
+        Wallet wallet = customerAccountDetails.getWallet();
+        if (wallet==null){
+            throw new WalletException("No wallet found for account " + accountNumber);
+        }
+        CustomerAccountDetails recieverAccount = happyBankUtilMethods.validateCustomerAccountDetails(recieverAccountNumber);
+        Double recieverAccountBalance = recieverAccount.getBalance();
+        Double walletBalance = wallet.getBalance();
+        BankBranches bankBranches = happyBankUtilMethods.validateBankBranch(transactionDTO.getIfscCode());
+        if (walletBalance<transactionDTO.getAmount()){
+            throw new InsufficientBalanceException("InSufficient Balance ");
+        }
+        if (!customerAccountDetails.getAccountNo().equals(transactionDTO.getAccountNumber()) &&
+                !bankBranches.getIFSCCode().equals(transactionDTO.getIfscCode())){
+            throw new CustomerAccountException("Incorrect Customer Account Details");
+        }
+        if (customerAccountDetails.getAccountNo().equals(transactionDTO.getAccountNumber()) &&
+                bankBranches.getIFSCCode().equals(transactionDTO.getIfscCode())){
+            recieverAccount.setBalance(recieverAccountBalance+transactionDTO.getAmount());
+            customerAccountDetailsRepo.saveAndFlush(recieverAccount);
+            wallet.setBalance(walletBalance-transactionDTO.getAmount());
+            walletRepo.saveAndFlush(wallet);
+            Transaction transaction = new Transaction();
+            transaction.setTransactionDate(LocalDate.now());
+            transaction.setAmount(transactionDTO.getAmount());
+            transaction.setTransactionType("WALLET_TRANSFER");
+            transaction.setTransactionId(Validator.generateTransactionId());
+            transaction.setAccountNumber(transactionDTO.getAccountNumber());
+            transaction.setDescription(transactionDTO.getDescription());
+            transaction.setCustomerAccountDetails(customerAccountDetails);
+            transactionRepo.saveAndFlush(transaction);
+        }
+        return "transaction Successful";
+
+    }
+
+    @Override
+    public String makePaymentByWallet(String uuid, TransactionDTO transactionDTO) {
+        happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+        CustomerAccountDetails customerAccountDetails = happyBankUtilMethods.validateCustomerAccountDetails(transactionDTO.getAccountNumber());
+        Wallet wallet = customerAccountDetails.getWallet();
+        BankBranches bankBranches = happyBankUtilMethods.validateBankBranch(transactionDTO.getIfscCode());
+        Double walletBalance = wallet.getBalance();
+        if (wallet == null) {
+            throw new WalletException("No wallet found for account " + transactionDTO.getAccountNumber());
+        }
+        if (walletBalance<transactionDTO.getAmount()){
+            throw new InsufficientBalanceException("InSufficient Balance ");
+        }
+        if (!customerAccountDetails.getAccountNo().equals(transactionDTO.getAccountNumber()) &&
+                !bankBranches.getIFSCCode().equals(transactionDTO.getIfscCode())){
+            throw new CustomerAccountException("Incorrect Customer Account Details");
+        }
+        if (customerAccountDetails.getAccountNo().equals(transactionDTO.getAccountNumber()) &&
+                bankBranches.getIFSCCode().equals(transactionDTO.getIfscCode())){
+            wallet.setBalance(walletBalance-transactionDTO.getAmount());
+            walletRepo.saveAndFlush(wallet);
+            Transaction transaction = new Transaction();
+            transaction.setTransactionDate(LocalDate.now());
+            transaction.setAmount(transactionDTO.getAmount());
+            transaction.setTransactionType("WALLET");
+            transaction.setTransactionId(Validator.generateTransactionId());
+            transaction.setAccountNumber(transactionDTO.getAccountNumber());
+            transaction.setDescription(transactionDTO.getDescription());
+            transaction.setCustomerAccountDetails(customerAccountDetails);
+            transactionRepo.saveAndFlush(transaction);
+        }
+        return "Wallet transaction successfully";
+
     }
 }
 

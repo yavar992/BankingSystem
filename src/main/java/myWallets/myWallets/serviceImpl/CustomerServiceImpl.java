@@ -289,6 +289,10 @@ public class CustomerServiceImpl implements CustomerService {
         try {
             happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
             Object[] customerAllDetails = customerRepo.findbyCustomerId(customerId);
+
+
+
+
             if (customerAllDetails==null || customerAllDetails.length==0){
                 throw new UserNotFoundException("No customer found for the accountId " + customerId);
             }
