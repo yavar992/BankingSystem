@@ -119,13 +119,13 @@ public class EmailSendarUtilImpl implements EmailSendarUtil{
     @Override
     public void sendEmailWithMultipleBodyLine(String toEmail, List<String> body, String subjects) {
         try {
-            SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
-            simpleMailMessage.setFrom("yavarkhan892300@gmail.com");
-            simpleMailMessage.setTo(toEmail);
-            simpleMailMessage.setText(String.join("\n", body));
-            simpleMailMessage.setSubject(subjects);
-            javaMailSender.send(simpleMailMessage);
-
+            MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "utf-8");
+            helper.setFrom("yavarkhan892300@gmail.com");
+            helper.setTo(toEmail);
+            helper.setText(String.join("\n", body), true);
+            helper.setSubject(subjects);
+            javaMailSender.send(mimeMessage);
         } catch (Exception exception) {
             log.info("cannot send the email due to the " + exception);
         }
@@ -144,6 +144,21 @@ public class EmailSendarUtilImpl implements EmailSendarUtil{
                 javaMailSender.send(mimeMessage);
                 log.info("mail send successfully");
             }
+        } catch (Exception e) {
+            log.info("Cannot send the email due to " + e.getMessage());
+        }
+    }
+
+    public void sendEmailWithMultipleLine(String toEmail, List<String> body, String subjects) throws MessagingException {
+        try {
+                MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+                MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true);
+                messageHelper.setFrom("yavarkhan892300@gmail.com");
+                messageHelper.setSubject(subjects);
+                messageHelper.setText(String.join("\n", body));
+                messageHelper.setTo(toEmail);
+                javaMailSender.send(mimeMessage);
+                log.info("mail send successfully");
         } catch (Exception e) {
             log.info("Cannot send the email due to " + e.getMessage());
         }

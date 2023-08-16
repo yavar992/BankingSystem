@@ -3,13 +3,10 @@ package myWallets.myWallets.controller;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.TransactionDTO;
-import myWallets.myWallets.DTO.TransactionDebitDTO;
 import myWallets.myWallets.DTO.WithdrawalMoneyByAtmDTO;
 import myWallets.myWallets.entity.CustomerAccountDetails;
 import myWallets.myWallets.entity.Transaction;
 import myWallets.myWallets.service.TransactionService;
-import org.hibernate.validator.constraints.UUID;
-import org.springframework.aot.hint.annotation.RegisterReflectionForBinding;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -142,5 +139,20 @@ public class TransactionController {
             return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot get transaction between dates");
+    }
+
+    //WITHDRAWAL MONEY BY THE BENEFICIARY
+    @PostMapping("/debitMoneyByBeneficiary")
+    public ResponseEntity<?> debitMoneyByBeneficiary(@RequestParam("UUID") String UUID ,
+                                                     @RequestBody TransactionDTO beneficiaryTransactionDTO){
+        try {
+            String debitTransactionMessage = transactionService.debitMoneyByBeneficiary(UUID ,  beneficiaryTransactionDTO);
+            if (debitTransactionMessage!=null){
+                return ResponseEntity.status(HttpStatus.OK).body(debitTransactionMessage);
+            }
+        }catch (Exception e){
+            return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
+        }
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Cannot withdrawal money ");
     }
 }

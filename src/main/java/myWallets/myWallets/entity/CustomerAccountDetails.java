@@ -72,6 +72,9 @@ public class CustomerAccountDetails {
     @OneToMany( mappedBy = "customerAccountDetails" , fetch = FetchType.LAZY , cascade = CascadeType.ALL ,orphanRemoval = true)
     List<Transaction> transactions;
 
+    @ToString.Exclude
+    @OneToOne(mappedBy = "account" , fetch = FetchType.LAZY , cascade = CascadeType.ALL , orphanRemoval =true)
+    private Beneficiary beneficiary;
     public void saveCustomer(){
 
     }

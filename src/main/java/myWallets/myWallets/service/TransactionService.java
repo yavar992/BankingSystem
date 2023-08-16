@@ -1,7 +1,6 @@
 package myWallets.myWallets.service;
 
 import myWallets.myWallets.DTO.TransactionDTO;
-import myWallets.myWallets.DTO.TransactionDebitDTO;
 import myWallets.myWallets.DTO.WithdrawalMoneyByAtmDTO;
 import myWallets.myWallets.entity.CustomerAccountDetails;
 import myWallets.myWallets.entity.Transaction;
@@ -25,4 +24,6 @@ public interface TransactionService {
     List<Transaction> getTransactionsByAccountNumber(String uuid, String accountNumber);
 
     List<Transaction> getTransactionBetweenDates(String uuid, String accountNumber, LocalDate startingDate, LocalDate endDate);
+
+    String debitMoneyByBeneficiary(String uuid,  TransactionDTO beneficiaryTransactionDTO);
 }

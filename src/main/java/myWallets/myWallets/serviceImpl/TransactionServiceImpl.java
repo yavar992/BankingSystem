@@ -1,10 +1,7 @@
 package myWallets.myWallets.serviceImpl;
 
 import lombok.extern.slf4j.Slf4j;
-import myWallets.myWallets.DTO.CustomerAccountDetailsDTO;
-import myWallets.myWallets.DTO.TransactionDTO;
-import myWallets.myWallets.DTO.TransactionDebitDTO;
-import myWallets.myWallets.DTO.WithdrawalMoneyByAtmDTO;
+import myWallets.myWallets.DTO.*;
 import myWallets.myWallets.constant.HappyBankUtilMethods;
 import myWallets.myWallets.entity.*;
 import myWallets.myWallets.exceptionHandling.*;
@@ -244,6 +241,44 @@ public class TransactionServiceImpl implements TransactionService {
             throw new  NoTransactionException("No transaction found for accountNumber " + accountNumber);
         }
         return transactions;
+    }
+
+    @Override
+    public String debitMoneyByBeneficiary(String uuid,  TransactionDTO beneficiaryTransactionDTO) {
+        happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
+        CustomerAccountDetails customerAccountDetails = happyBankUtilMethods.validateCustomerAccountDetails(beneficiaryTransactionDTO.getAccountNumber());
+        Beneficiary beneficiary = happyBankUtilMethods.validateBeneficiaryAccount(customerAccountDetails);
+        BankBranches bankBranches = happyBankUtilMethods.validateBankBranch(beneficiaryTransactionDTO.getIfscCode());
+        String IFSCCode = bankBranches.getIFSCCode();
+        Double balance = customerAccountDetails.getBalance();
+        Boolean isAccountVerified = beneficiary.isAccountVerified();
+        log.info("isAccountVerified: " + isAccountVerified);
+        String accountNumber = beneficiaryTransactionDTO.getAccountNumber();
+        Boolean allowedToWithdrawal = beneficiary.isAllowedToWithdraw();
+        log.info("allowedToWithdrawal: " +allowedToWithdrawal);
+        if (!isAccountVerified){
+            throw new BeneficiaryException("Your account is not verified yet plz verified your account in process to withdrawal money ");
+        }
+        if (!isAccountVerified || !allowedToWithdrawal){
+            throw new BeneficiaryException("You have not permission to withdraw money from owner account plz submit your document in banks to verified yourself ");
+        }
+        if (!accountNumber.equals(beneficiaryTransactionDTO.getAccountNumber()) || !IFSCCode.equals(beneficiaryTransactionDTO.getIfscCode())){
+            throw new TransactionException("Invalid Details either accountNumber or IFSCCode is incorrect ");
+        }
+        if (allowedToWithdrawal && isAccountVerified &&  accountNumber.equals(beneficiaryTransactionDTO.getAccountNumber()) && IFSCCode.equals(beneficiaryTransactionDTO.getIfscCode())){
+            customerAccountDetails.setBalance(balance-beneficiaryTransactionDTO.getAmount());
+            customerAccountDetailsRepo.saveAndFlush(customerAccountDetails);
+            Transaction transaction = new Transaction();
+            transaction.setTransactionDate(LocalDate.now());
+            transaction.setAmount(beneficiaryTransactionDTO.getAmount());
+            transaction.setTransactionType("BENEFICIARY");
+            transaction.setTransactionId(Validator.generateTransactionId());
+            transaction.setAccountNumber(beneficiaryTransactionDTO.getAccountNumber());
+            transaction.setDescription(beneficiaryTransactionDTO.getDescription());
+            transaction.setCustomerAccountDetails(customerAccountDetails);
+            transactionRepo.saveAndFlush(transaction);
+        }
+        return "Transaction created successfully";
     }
 }
 

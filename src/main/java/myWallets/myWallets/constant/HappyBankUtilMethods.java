@@ -89,4 +89,12 @@ public class HappyBankUtilMethods {
                 .orElseThrow(()->new CustomerAccountException("No such customer account found for customerId" + id));
         return customerAccountDetails;
     }
+
+    public Beneficiary validateBeneficiaryAccount(CustomerAccountDetails customerAccountDetails) {
+        Beneficiary beneficiary = customerAccountDetails.getBeneficiary();
+        if (beneficiary==null){
+            throw new BeneficiaryException("No Beneficiary found for the bank account " );
+        }
+        return beneficiary;
+    }
 }
