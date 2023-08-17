@@ -9,12 +9,14 @@ import myWallets.myWallets.convertor.BankBranchConvertor;
 import myWallets.myWallets.convertor.CustomerConvertor;
 import myWallets.myWallets.entity.CurrentUserSession;
 import myWallets.myWallets.entity.Customer;
+import myWallets.myWallets.entity.Roles;
 import myWallets.myWallets.event.CustomerEvent;
 import myWallets.myWallets.exceptionHandling.InvalidOTPException;
 import myWallets.myWallets.exceptionHandling.UnverifiedCustomerException;
 import myWallets.myWallets.exceptionHandling.UserNotFoundException;
 import myWallets.myWallets.repository.CurrentUserSessionRepo;
 import myWallets.myWallets.repository.CustomerRepo;
+import myWallets.myWallets.repository.RolesRepo;
 import myWallets.myWallets.service.CustomerService;
 import myWallets.myWallets.util.BankAccountUtil;
 import myWallets.myWallets.validator.Validator;
@@ -24,9 +26,7 @@ import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.LoginException;
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,27 +34,35 @@ import java.util.stream.Collectors;
 @Transactional
 public class CustomerServiceImpl implements CustomerService {
 
-    CustomerRepo customerRepo;
-    HappyBankUtilMethods happyBankUtilMethods;
-    ApplicationEventPublisher applicationEventPublisher;
-    CurrentUserSessionRepo currentUserSessionRepo ;
+     private final CustomerRepo customerRepo;
+    private final HappyBankUtilMethods happyBankUtilMethods;
+    private final ApplicationEventPublisher applicationEventPublisher;
+    private final CurrentUserSessionRepo currentUserSessionRepo ;
+    private final RolesRepo rolesRepo;
+
 
 
     public CustomerServiceImpl(CustomerRepo customerRepo,
                                HappyBankUtilMethods happyBankUtilMethods,
                                ApplicationEventPublisher applicationEventPublisher,
-                               CurrentUserSessionRepo currentUserSessionRepo
+                               CurrentUserSessionRepo currentUserSessionRepo ,
+                               RolesRepo rolesRepo
                                         ) {
         this.customerRepo = customerRepo;
         this.happyBankUtilMethods = happyBankUtilMethods;
         this.applicationEventPublisher = applicationEventPublisher;
         this.currentUserSessionRepo = currentUserSessionRepo;
+        this.rolesRepo = rolesRepo;
     }
 
     @Override
     public Customer saveCustomer(CustomerDTO customerDTO) {
         try {
             Customer customer = CustomerConvertor.customerDtoToCustomer(customerDTO);
+            Set<Roles> rolesSet = new HashSet<>();
+            Roles roles  = rolesRepo.findByName("USER").get();
+            rolesSet.add(roles);
+            customer.setRolesSet(rolesSet);
               log.info("User Registered Successfully !");
             CustomerEvent customerEvent = new CustomerEvent(customer);
              applicationEventPublisher.publishEvent(customerEvent);
@@ -288,19 +296,27 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerAllDetails findAllCustomerDetailsByCustomerId(Long customerId, String uuid) {
         try {
             happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
-            Object[] customerAllDetails = customerRepo.findbyCustomerId(customerId);
-
-
-
-
-            if (customerAllDetails==null || customerAllDetails.length==0){
+            List<Object[]> customerAllDetailsArray = customerRepo.findbyCustomerId(customerId);
+            if (customerAllDetailsArray.isEmpty()){
                 throw new UserNotFoundException("No customer found for the accountId " + customerId);
             }
-            CustomerAccountDetailsDTO customerAccountDetailsDTO = BankAccountConvertor.mappedToCustomerAccountDetails(customerAllDetails);
-            BankBranchSendarDTO bankBranchSendarDTO = BankBranchConvertor.mappedToBankBranch(customerAllDetails);
-            List<CustomerAccountRecieveDTO> customerAccountRecieveDTOS = CustomerConvertor.mappedToCustomerAccountRecieve(customerAllDetails);
-            CustomerAllDetails customerAllDetails1 =new CustomerAllDetails(customerAccountDetailsDTO , customerAccountRecieveDTOS ,bankBranchSendarDTO);
-            return customerAllDetails1;
+            Object[] firstRow = customerAllDetailsArray.get(0);
+            CustomerAccountRecieveDTO customerAccountDetailsDTOList = (CustomerAccountRecieveDTO) firstRow[0];
+            BankBranchSendarDTO bankBranchSendarDTO = (BankBranchSendarDTO) firstRow[1];
+
+            List<CustomerAccountDetailsDTO> customerAccountDetailsDTO = new ArrayList<>();
+            for (Object row : customerAllDetailsArray) {
+                CustomerAccountDetailsDTO accountDetailsDTO = (CustomerAccountDetailsDTO) row;
+                customerAccountDetailsDTO.add(accountDetailsDTO);
+            }
+
+            CustomerAllDetails customerAllDetailsDTO = CustomerAllDetails.builder()
+                    .customerAccountDetailsDTOList(customerAccountDetailsDTOList)
+                    .bankBranchSendarDTO(bankBranchSendarDTO)
+                    .customerAccountDetailsDTO(customerAccountDetailsDTO)
+                    .build();
+
+            return customerAllDetailsDTO;
         }catch (Exception e){
             throw e;
         }

@@ -4,6 +4,8 @@ import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.service.BankBranchService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -32,17 +34,12 @@ public class HelperClass {
         System.out.println(formattedDate);
         Integer cvv = (int) ((Math.random()*900)+100);
         System.out.println(cvv);
-        try {
-            infiniteRecursion();
 
-        }catch (Exception e){
-            log.error("Exception " + e.getStackTrace());
-            e.getStackTrace();
-        }
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        System.out.println(passwordEncoder.encode("yavar992"));
     }
 
     public static void infiniteRecursion(){
         System.out.println("infinite recursion");
-        infiniteRecursion();
     }
 }

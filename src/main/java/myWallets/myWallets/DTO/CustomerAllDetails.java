@@ -13,8 +13,9 @@ import java.util.List;
 @Builder
 public class CustomerAllDetails {
 
-    private CustomerAccountDetailsDTO customerAccountDetailsDTO;
-    private List<CustomerAccountRecieveDTO> customerAccountDetailsDTOList;
+    private CustomerAccountRecieveDTO customerAccountDetailsDTOList;
     private BankBranchSendarDTO bankBranchSendarDTO;
+    private List<CustomerAccountDetailsDTO> customerAccountDetailsDTO;
+
 
 }

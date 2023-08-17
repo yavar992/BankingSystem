@@ -1,8 +1,5 @@
 package myWallets.myWallets.repository;
 
-import lombok.CustomLog;
-import myWallets.myWallets.DTO.CustomerAllDetails;
-import myWallets.myWallets.entity.CurrentUserSession;
 import myWallets.myWallets.entity.Customer;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -33,8 +30,12 @@ public interface CustomerRepo extends JpaRepository<Customer ,Long> {
     Customer findByMobileNumberOrEmail(String mobileNumber, String email);
 
     @Query(value = " SELECT * FROM `customer` c LEFT JOIN bankbranches bb ON c.bank_branch_id = bb.id LEFT JOIN customeraccountdetails cad ON c.id = cad.customer_id WHERE c.id =?1" , nativeQuery = true)
-    Object[] findbyCustomerId(Long customerId);
+    List<Object[]> findbyCustomerId(Long customerId);
 
     @Query(value = "SELECT email FROM customer WHERE isVerified=0" ,nativeQuery = true)
     List<String> findUnverifiedCustomer();
+
+
+    @Query(value = "SELECT * FROM customer WHERE email =?1", nativeQuery = true)
+    Optional<Customer> findByUsernameOrEmail(String username);
 }

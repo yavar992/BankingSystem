@@ -16,6 +16,7 @@ import org.hibernate.annotations.DynamicUpdate;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 
 
 @Entity
@@ -44,7 +45,7 @@ public class Customer {
     private String mobileNumber;
 
     @NotNull
-    @Size(min = 6, max = 12, message = "Invalid Password [ must be 6 to 8 characters ]")
+//    @Size(min = 6, max = 12, message = "Invalid Password [ must be 6 to 8 characters ]")
     private String password;
 
     @NotNull
@@ -83,6 +84,13 @@ public class Customer {
     @JsonIgnore
     @ToString.Exclude
     private CurrentUserSession currentUserSession;
+
+    @ManyToMany(fetch = FetchType.EAGER , cascade = CascadeType.ALL)
+    @JoinTable(name = "user_roles" ,
+            joinColumns =@JoinColumn(name = "user_id", referencedColumnName = "id"),
+            inverseJoinColumns =@JoinColumn(name = "role_id",referencedColumnName = "id")
+    )
+    private Set<Roles> rolesSet;
 
     @PrePersist
     public void TranslateNameAndAddressIntoUpparCase(){

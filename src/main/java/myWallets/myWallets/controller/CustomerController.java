@@ -224,9 +224,13 @@ public class CustomerController {
 
 
     //GET ALL DETAILS OF CUSTOMER INCLUDING BANK BRANCH , CUSTOMER DETAILS
+    @PostMapping("/getAllCustomerDetails")
     public ResponseEntity<?> getAllDetailsOfCustomer(@RequestParam("UUID") String UUID , @RequestParam("customerId") Long customerId){
         try {
             CustomerAllDetails customerAllDetails = customerService.findAllCustomerDetailsByCustomerId(customerId , UUID);
+            if (customerAllDetails!=null){
+                return ResponseEntity.status(HttpStatus.OK).body(customerAllDetails);
+            }
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
         }
