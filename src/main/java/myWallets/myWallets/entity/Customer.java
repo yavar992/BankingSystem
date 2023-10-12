@@ -2,7 +2,6 @@ package myWallets.myWallets.entity;
 
 
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -68,6 +67,9 @@ public class Customer {
     private String otp;
     private boolean isActive = true; // Whether the account is active or not
     private boolean isVerified; // Whether the user's identity is verified or not
+
+    @Transient
+    private String temporary;
 
     @OneToMany( fetch = FetchType.LAZY ,cascade = CascadeType.ALL )
     @JsonIgnore
