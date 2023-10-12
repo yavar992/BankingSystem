@@ -40,32 +40,25 @@ Our Bank Management System is packed with a wide array of cutting-edge features 
 Before diving into the Bank Management System, ensure you have the following:
 
 * Java Development Kit (JDK)
-Maven
-MySQL
-An Integrated Development Environment (IDE) like Eclipse or IntelliJ IDEA
-
+* Maven
+* MySQL
+* An Integrated Development Environment (IDE) like Eclipse or IntelliJ IDEA
 ### Setup
 
-1.Clone this repository to your local machine
-bash
-Copy code
-git clone https://github.com/yavar992/BankingSystem.git
-2.Configure your MySQL database settings in application.properties.
-3.Run the application using your IDE or Maven:
-
-bash
-Copy code
-mvn spring-boot:run
-4.Access the application in your web browser at http://localhost:8484.
+1. Clone this repository to your local machine
+2. git clone https://github.com/yavar992/BankingSystem.git
+3. Configure your MySQL database settings in application.properties.
+4. Run the application using your IDE or Maven:
+5. Access the application in your web browser at http://localhost:8484.
 
 ## Contribute
 
 We embrace contributions from the open-source community. To contribute:
 
-1.Fork the repository.
-2.Create a new branch for your feature or bug fix.
-3.Make your changes and commit them with clear and concise messages.
-4.Push your changes to your fork and open a pull request to this repository.
+1. Fork the repository.
+2. Create a new branch for your feature or bug fix.
+3. Make your changes and commit them with clear and concise messages.
+4. Push your changes to your fork and open a pull request to this repository.
 
 ## License
 
