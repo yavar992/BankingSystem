@@ -1,5 +1,5 @@
 
-# Bank Management System
+# Bank Management System(Banking System)
 
 Welcome to the Bank Management System, a comprehensive and feature-rich platform built using Spring Boot, Hibernate, JPA, and MySQL, designed to provide a seamless banking experience.
 
