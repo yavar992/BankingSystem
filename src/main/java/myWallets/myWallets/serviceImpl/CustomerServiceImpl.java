@@ -4,8 +4,6 @@ import jakarta.transaction.Transactional;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.*;
 import myWallets.myWallets.constant.HappyBankUtilMethods;
-import myWallets.myWallets.convertor.BankAccountConvertor;
-import myWallets.myWallets.convertor.BankBranchConvertor;
 import myWallets.myWallets.convertor.CustomerConvertor;
 import myWallets.myWallets.entity.CurrentUserSession;
 import myWallets.myWallets.entity.Customer;
@@ -18,7 +16,6 @@ import myWallets.myWallets.repository.CurrentUserSessionRepo;
 import myWallets.myWallets.repository.CustomerRepo;
 import myWallets.myWallets.repository.RolesRepo;
 import myWallets.myWallets.service.CustomerService;
-import myWallets.myWallets.util.BankAccountUtil;
 import myWallets.myWallets.validator.Validator;
 import myWallets.myWallets.validator.ValidatorUtils;
 import org.springframework.context.ApplicationEventPublisher;
@@ -26,7 +23,10 @@ import org.springframework.stereotype.Service;
 
 import javax.security.auth.login.LoginException;
 import java.time.LocalDate;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -81,7 +81,7 @@ public class CustomerServiceImpl implements CustomerService {
             }
             Validator.verifyOTP(otp);
             Optional<Customer> customer = customerRepo.findByOtp(otp);
-            if (customer==null || !customer.isPresent()){
+            if (customer.isEmpty()){
                 throw new myWallets.myWallets.exceptionHandling.LoginException("Invalid OTP ");
             }
             Customer customer1 = customer.get();
@@ -108,7 +108,7 @@ public class CustomerServiceImpl implements CustomerService {
     public List<Customer> getAllCustomer() {
         try {
             List<Customer> customers = customerRepo.findAll();
-            if (customers!=null && !customers.isEmpty()){
+            if (!customers.isEmpty()){
                 return customers;
             }
         }catch (Exception e){
@@ -120,8 +120,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public Customer getAccount(Long id) {
-        Customer customer = customerRepo.findById(id).orElseThrow(()->new UserNotFoundException("User Not Found on id " + id));
-        return customer;
+        return customerRepo.findById(id).orElseThrow(()->new UserNotFoundException("User Not Found on id " + id));
     }
 
     @Override
@@ -153,8 +152,8 @@ public class CustomerServiceImpl implements CustomerService {
             Optional<Customer> customer = customerRepo.findByUUID(uuid);
             log.info("customer " + customer);
             ValidatorUtils.validateLoggedInCustomer(customer,uuid);
-            Customer customer1 = customer.get();
-            return customer1;
+            return customer.get();
+
         }
         catch (Exception e){
             log.info("cannot get the user by the uuid due to " + e.getMessage());
@@ -168,81 +167,66 @@ public class CustomerServiceImpl implements CustomerService {
         //TO DO -- APPROVED ONLY USER WHO ARE AUTHENTICATE WITH OTP
 
         Optional<Customer> customer = customerRepo.findByUUID(uuid);
-        if (!customer.isPresent()){
-            throw new UserNotFoundException(" User Not Exist  ");
+        if (customer.isEmpty()){
+            throw new UserNotFoundException(" User Not Exist ");
         }
             Optional<CurrentUserSession> currentUserSession = currentUserSessionRepo.findByUUID(uuid);
-            if (!currentUserSession.isPresent()){
+            if (currentUserSession.isEmpty()){
                 throw new LoginException("No User LoggedIn");
             }
             Customer customer1 = customer.get();
-            CustomerDTO customerDTO = CustomerDTO.builder()
-                    .id(customer1.getId())
-                    .customerName(customer1.getCustomerName())
-                    .address(customer1.getAddress())
-                    .mobileNumber(customer1.getMobileNumber())
-                    .gender(customer1.getGender())
-                    .email(customer1.getEmail())
-                    .dateOfBirth(LocalDate.parse(String.valueOf(customer1.getDateOfBirth())))
-                    .build();
-            return customerDTO;
+        return CustomerDTO.builder()
+                .id(customer1.getId())
+                .customerName(customer1.getCustomerName())
+                .address(customer1.getAddress())
+                .mobileNumber(customer1.getMobileNumber())
+                .gender(customer1.getGender())
+                .email(customer1.getEmail())
+                .dateOfBirth(LocalDate.parse(String.valueOf(customer1.getDateOfBirth())))
+                .build();
         }
 
     @Override
     public boolean checkIfCustomerMobileNumberOrEmailExist(String mobileNumber, String email) {
-        try {
             Customer customer = customerRepo.findByMobileNumberOrEmail(mobileNumber ,email);
             if (customer!=null){
                 throw new UserNotFoundException("User is already exists ");
             }
-            return customer!=null;
-        }catch (Exception e){
-            throw e;
-        }
+            return true;
+
     }
 
     @Override
     public Boolean checkIfaUserIsVerifiedOrNot(String uuid) {
-        try {
             Optional<Customer> customer = customerRepo.findByUUID(uuid);
-            Customer customer1 = customer.get();
-            if (customer1!=null && customer1.isVerified()==false){
-                throw new UnverifiedCustomerException("you account is not verified yet plz verify yourself ");
+            if (customer.isEmpty()){
+                throw new UserNotFoundException("No User logged in");
             }
-            if (!customer.isPresent()){
-                throw new myWallets.myWallets.exceptionHandling.LoginException("No User Login for uuid " + uuid);
+            Customer customer1 = customer.get();
+            if (!customer1.isVerified()){
+                throw new UnverifiedCustomerException("you account is not verified yet plz verify yourself ");
             }
             Optional<CurrentUserSession> currentUserSession = currentUserSessionRepo.findByUUID(uuid);
             if (currentUserSession.isPresent()){
                 throw new myWallets.myWallets.exceptionHandling.LoginException("User is already logged in");
             }
-            if (customer1!=null && customer1.isVerified()==true){
-                return true;
-            }
-        }catch (Exception e){
-            throw e;
-        }
-        return false;
+        return customer1.isVerified();
     }
 
     @Override
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public List<CustomerAccountRecieveDTO> findAllCustomer(String uuid) {
-        try {
             Optional<Customer> customer = customerRepo.findByUUID(uuid);
-            Customer customer1 = customer.get();
-            if (customer1!=null && !customer1.isVerified()){
-                throw new UnverifiedCustomerException("you are not authorized to see the list of all user ");
-            }
-            if (customer==null){
+            if (customer.isEmpty()){
                 throw new UserNotFoundException("No User logged in");
             }
+            Customer customer1 = customer.get();
+            if (!customer1.isVerified()){
+                throw new UnverifiedCustomerException("you are not authorized to see the list of all user ");
+            }
+
             List<Customer> customers = customerRepo.findAll();
             return customers.stream().map(CustomerConvertor::customerToCustomerDTO).collect(Collectors.toList());
-
-        }catch (Exception e){
-            throw e;
-        }
     }
 
     @Override
@@ -294,33 +278,42 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerAllDetails findAllCustomerDetailsByCustomerId(Long customerId, String uuid) {
-        try {
             happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
             List<Object[]> customerAllDetailsArray = customerRepo.findbyCustomerId(customerId);
             if (customerAllDetailsArray.isEmpty()){
-                throw new UserNotFoundException("No customer found for the accountId " + customerId);
-            }
-            Object[] firstRow = customerAllDetailsArray.get(0);
-            CustomerAccountRecieveDTO customerAccountDetailsDTOList = (CustomerAccountRecieveDTO) firstRow[0];
-            BankBranchSendarDTO bankBranchSendarDTO = (BankBranchSendarDTO) firstRow[1];
-
-            List<CustomerAccountDetailsDTO> customerAccountDetailsDTO = new ArrayList<>();
-            for (Object row : customerAllDetailsArray) {
-                CustomerAccountDetailsDTO accountDetailsDTO = (CustomerAccountDetailsDTO) row;
-                customerAccountDetailsDTO.add(accountDetailsDTO);
+                throw new UserNotFoundException("No customer details found for the accountId " + customerId);
             }
 
-            CustomerAllDetails customerAllDetailsDTO = CustomerAllDetails.builder()
-                    .customerAccountDetailsDTOList(customerAccountDetailsDTOList)
-                    .bankBranchSendarDTO(bankBranchSendarDTO)
-                    .customerAccountDetailsDTO(customerAccountDetailsDTO)
-                    .build();
+            CustomerAllDetails customerAllDetails1 = new CustomerAllDetails();
+            for(Object[] objects : customerAllDetailsArray){
+                 long id = (long) objects[0];
+                 String customerName = (String) objects[4];
+                 String mobileNumber = (String) objects[10];
+                 String email = (String) objects[6];
+                 CustomerAccDTO customerAccountRecieveDTO = new CustomerAccDTO();
+                 customerAccountRecieveDTO.setId(id);
+                 customerAccountRecieveDTO.setCustomerName(customerName);
+                 customerAccountRecieveDTO.setEmail(email);
+                 customerAccountRecieveDTO.setMobileNumber(mobileNumber);
+                 customerAllDetails1.setCustomerAccDTO(customerAccountRecieveDTO);
+                 Long bankBranchId = (Long) objects[16];
+                 String branchName = (String) objects[21];
+                 String streetAddress = (String) objects[28];
+                 String city = (String) objects[23];
+                 String state = (String) objects[27];
+                 String branchPhoneNumber = (String) objects[22];
 
-            return customerAllDetailsDTO;
-        }catch (Exception e){
-            throw e;
-        }
-    }
+                 BankBranchSendarDTO bankBranchSendarDTO = new BankBranchSendarDTO();
+                 bankBranchSendarDTO.setId(bankBranchId);
+                 bankBranchSendarDTO.setBranchName(branchName);
+                 bankBranchSendarDTO.setStreetAddress(streetAddress);
+                 bankBranchSendarDTO.setCity(city);
+                 bankBranchSendarDTO.setState(state);
+                 bankBranchSendarDTO.setBranchPhoneNumber(branchPhoneNumber);
+                 customerAllDetails1.setBankBranchSendarDTO(bankBranchSendarDTO);
+            }
+        return customerAllDetails1;
+}
 
     @Override
     public String deleteCustomerByUUID(String uuid) {

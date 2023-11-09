@@ -6,7 +6,6 @@ import myWallets.myWallets.DTO.ForgetPasswordDTO;
 import myWallets.myWallets.DTO.Login;
 import myWallets.myWallets.DTO.OptDTO;
 import myWallets.myWallets.entity.Customer;
-import myWallets.myWallets.exceptionHandling.UserAlreadyLoggedIn;
 import myWallets.myWallets.repository.CurrentUserSessionRepo;
 import myWallets.myWallets.service.CustomerService;
 import myWallets.myWallets.service.LoginService;
@@ -36,9 +35,7 @@ public class LoginController {
             if (output!=null){
                 return ResponseEntity.status(HttpStatus.OK).body(output);
             }
-        } catch (UserAlreadyLoggedIn e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
+        } 
         catch (Exception e){
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
@@ -47,7 +44,7 @@ public class LoginController {
 
     //LOGOUT URL
 
-    @GetMapping({"/logout","/signout"})
+    @GetMapping({"logout","signout"})
     public ResponseEntity<?> logout(@RequestParam ("UUID") String UUID){
         try {
             String customer = loginService.logout(UUID);

@@ -36,7 +36,8 @@ public class HelperClass {
         System.out.println(cvv);
 
         PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        System.out.println(passwordEncoder.encode("yavar992"));
+        System.out.println(passwordEncoder.encode("Yavar992"));
+
     }
 
     public static void infiniteRecursion(){

@@ -22,18 +22,18 @@ public interface ValidatorUtils {
     }
 
     public static void validateLoggedInCustomer(Optional<Customer> customer, String uuid) {
-        if (!customer.isPresent()) {
+        if (customer.isEmpty()) {
             throw new LoginException(StatusCode.USER_IS_NOT_LOGGED_IN.name() + " for the uuid " + uuid);
         }
     }
     public static void validateCurrentUserSession(Optional<CurrentUserSession> currentUserSession, String uuid) {
-        if (!currentUserSession.isPresent()) {
+        if (currentUserSession.isEmpty()) {
             throw new LoginException("User Not Login  " + uuid);
         }
     }
 
     public static void validateBankBranch(Optional<BankBranches> bankBranches) {
-        if (bankBranches == null || bankBranches.isEmpty()) {
+        if ( bankBranches.isEmpty()) {
             throw new BankBranchesNotFoundException(StatusCode.BRANCH_NOT_EXIST.getMessage());
         }
     }
@@ -52,7 +52,7 @@ public interface ValidatorUtils {
     }
 
     public static void validateBank(Optional<BankAccount> bankAccount){
-        if (bankAccount==null || bankAccount.isEmpty()){
+        if ( bankAccount.isEmpty()){
             throw new BankNotFoundException("Bank Not Found");
         }
     }

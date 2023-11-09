@@ -2,14 +2,13 @@ package myWallets.myWallets.convertor;
 
 import myWallets.myWallets.DTO.BankBranchDTO;
 import myWallets.myWallets.DTO.BankBranchSendarDTO;
-import myWallets.myWallets.entity.BankAccount;
 import myWallets.myWallets.entity.BankBranches;
 
 
 public class BankBranchConvertor {
 
     public static BankBranches convertBankBranchDtoToBankBranches(BankBranchDTO bankBranchDTO){
-        BankBranches bankBranches = BankBranches.builder()
+        return BankBranches.builder()
                 .branchEmail(bankBranchDTO.getBranchEmail())
                 .branchManager(bankBranchDTO.getBranchManager().toUpperCase())
                 .branchName(bankBranchDTO.getBranchName().toUpperCase())
@@ -19,11 +18,10 @@ public class BankBranchConvertor {
                 .postalCode(bankBranchDTO.getPostalCode())
                 .streetAddress(bankBranchDTO.getStreetAddress().toUpperCase())
                 .build();
-        return bankBranches;
     }
 
     public static BankBranchSendarDTO convertBankBranchToBankBranchDTO(BankBranches bankBranches){
-        BankBranchSendarDTO bankBranchSendarDTO = BankBranchSendarDTO.builder()
+        return BankBranchSendarDTO.builder()
                 .id(bankBranches.getId())
                 .branchName(bankBranches.getBranchName())
                 .branchPhoneNumber(bankBranches.getBranchCode())
@@ -31,19 +29,17 @@ public class BankBranchConvertor {
                 .state(bankBranches.getState())
                 .streetAddress(bankBranches.getStreetAddress())
                 .build();
-        return bankBranchSendarDTO;
     }
 
 
     public static BankBranches convertBankBranchesSendarDtoToBankBranches(BankBranchSendarDTO bankBranchSendarDTO){
-        BankBranches bankBranches = BankBranches.builder()
+        return BankBranches.builder()
                 .branchName(bankBranchSendarDTO.getBranchName())
                 .streetAddress(bankBranchSendarDTO.getStreetAddress())
                 .city(bankBranchSendarDTO.getCity())
                 .state(bankBranchSendarDTO.getState())
                 .branchPhoneNumber(bankBranchSendarDTO.getBranchPhoneNumber())
                 .build();
-            return bankBranches;
     }
 
     public static BankBranchSendarDTO mappedToBankBranch(Object[] customerAllDetails) {

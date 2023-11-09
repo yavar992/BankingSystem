@@ -1,22 +1,15 @@
 package myWallets.myWallets.DTO;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-import java.time.LocalDate;
-import java.time.ZonedDateTime;
-
-@Builder
-@Data
+@Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class CustomerAccountRecieveDTO {
+@Builder
+public class CustomerAccDTO {
 
     private Long id;
 
@@ -31,15 +24,5 @@ public class CustomerAccountRecieveDTO {
     @NotNull
     @Size(min = 6, max = 50, message = "Invalid Email [ must be 6 to 50 characters ]")
     private String email;
-
-
-    @JsonIgnore
-    @NotNull
-    @JsonFormat(shape = JsonFormat.Shape.STRING , pattern = "dd-MM-yyyy")
-    private LocalDate dateOfBirth;
-
-    @JsonIgnore
-    private ZonedDateTime updateDate;
-
 
 }

@@ -33,7 +33,7 @@ public class HappyBankUtilMethods {
 
     public  Customer authorizeAndGetVerifiedCustomer(String uuid) {
         Optional<Customer> customerOptional = customerRepo.findByUUID(uuid);
-        if ( customerOptional==null || customerOptional.isEmpty()) {
+        if (customerOptional.isEmpty()) {
             throw new UserNotFoundException("No User logged in");
         }
 

@@ -3,10 +3,8 @@ package myWallets.myWallets.serviceImpl;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.BankAccountDTO;
 import myWallets.myWallets.entity.BankAccount;
-import myWallets.myWallets.entity.BankBranches;
 import myWallets.myWallets.entity.CurrentUserSession;
 import myWallets.myWallets.entity.Customer;
-import myWallets.myWallets.exceptionHandling.BankBranchesNotFoundException;
 import myWallets.myWallets.exceptionHandling.BankNotFoundException;
 import myWallets.myWallets.exceptionHandling.UserNotFoundException;
 import myWallets.myWallets.repository.BankAccountRepo;
@@ -14,13 +12,10 @@ import myWallets.myWallets.repository.BankBranchRepo;
 import myWallets.myWallets.repository.CurrentUserSessionRepo;
 import myWallets.myWallets.repository.CustomerRepo;
 import myWallets.myWallets.service.BankAccountService;
-import myWallets.myWallets.validator.Validator;
 import myWallets.myWallets.validator.ValidatorUtils;
-import org.apache.catalina.LifecycleState;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -40,15 +35,19 @@ public class BankAccountServiceImpl implements BankAccountService {
     @Autowired
     BankBranchRepo bankBranchRepo;
 
+    public BankAccountServiceImpl(BankAccountRepo bankAccountRepo) {
+        this.bankAccountRepo = bankAccountRepo;
+    }
+
     @Override
     public String openBankAccount(String uuid, BankAccountDTO bankAccountDTO) {
         try {
             Optional<CurrentUserSession> currentUserSession1 = currentUserSessionRepo.findByUUID(uuid);
-            if (!currentUserSession1.isPresent()) {
+            if (currentUserSession1.isEmpty()) {
                 throw new UserNotFoundException("User Not Found for UUID " + uuid);
             }
             Optional<Customer> customer = customerRepo.findByUUID(uuid);
-            if (!customer.isPresent()){
+            if (customer.isEmpty()){
                 throw new UserNotFoundException("User Not Found for UUID " + uuid);
             }
 //            Customer customer1 = customer.get();
@@ -99,8 +98,8 @@ public class BankAccountServiceImpl implements BankAccountService {
 
     @Override
     public List<BankAccount> getllBanks() {
-        List<BankAccount> bankAccounts = bankAccountRepo.findAll();
-        return bankAccounts;
+         return bankAccountRepo.findAll();
+
     }
 
     @Override

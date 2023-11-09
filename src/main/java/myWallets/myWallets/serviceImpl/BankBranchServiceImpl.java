@@ -47,13 +47,13 @@ public class BankBranchServiceImpl  implements BankBranchService {
     public List<BankBranches> getAllBranches(String uuid) throws LoginException {
         try {
             Optional<CurrentUserSession> currentUserSession = currentUserSessionRepo.findByUUID(uuid);
-            if (!currentUserSession.isPresent()){
+            if (currentUserSession.isEmpty()){
                 throw new LoginException("User Not found in current user session for uuid " + uuid);
             }
 
             List<BankBranches> bankBranches = bankBranchRepo.findAll();
             log.info("Branches: " + bankBranches);
-            if (bankBranches==null || bankBranches.isEmpty()){
+            if (bankBranches.isEmpty()){
                 throw new BankBranchesNotFoundException("No Bank branches found ");
             }
             return bankBranches;
@@ -65,35 +65,27 @@ public class BankBranchServiceImpl  implements BankBranchService {
 
     @Override
     public List<BankBranches> getBankBranchesByBankBranchName(String uuid, String branchName)  {
-        try {
             Optional<CurrentUserSession> currentUserSession = currentUserSessionRepo.findByUUID(uuid);
-            if (!currentUserSession.isPresent()) {
+            if (currentUserSession.isEmpty()) {
                 throw new myWallets.myWallets.exceptionHandling.LoginException("User not found for uuid " + uuid);
             }
             List<BankBranches> bankBranches = bankBranchRepo.findByName(branchName);
             log.info("Bank branches " + bankBranches);
             log.info("Bank branch " + bankBranches.get(0).getBranchCode());
-            if (bankBranches==null || bankBranches.isEmpty()){
+            if (bankBranches.isEmpty()){
                 throw new BankBranchesNotFoundException("Bank branch not found for branch " + branchName);
             }
             return bankBranches;
-        }catch (Exception e){
-            throw e;
-        }
     }
 
     @Override
     public Long getBranchCodeByBranchName(String branchName, String uuid)  {
-        try{
             happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
             List<BankBranches> bankBranches = getBankBranchesByBankBranchName(branchName ,uuid);
             BankBranches bankBranches1 = bankBranches.get(0);
             log.info("bankBranches :" + bankBranches1 );
-            Long bankBrancheCode = Long.valueOf(bankBranches1.getBranchCode());
-            return bankBrancheCode;
-        }catch (Exception e){
-            throw e;
-        }
+            return Long.valueOf(bankBranches1.getBranchCode());
+
     }
 
     @Override
@@ -118,21 +110,17 @@ public class BankBranchServiceImpl  implements BankBranchService {
 
     @Override
     public BankBranches bankBranchesById(Long id) {
-        try {
             Optional<BankBranches> bankBranches = bankBranchRepo.findById(id);
             ValidatorUtils.validateBankBranch(bankBranches);
-            BankBranches bankBranches1 = bankBranches.get();
-            return bankBranches1;
-        }catch (Exception e){
-            throw e;
-        }
+            return bankBranches.get();
+
     }
 
     @Override
     public List<BankBranchSendarDTO> getALLbranchesData(String uuid) {
         happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
         List<BankBranches> bankBranches = bankBranchRepo.findAll();
-        if (bankBranches==null){
+        if (bankBranches.isEmpty()){
             throw new BankBranchesNotFoundException("No branches found");
         }
         return bankBranches.stream().map(BankBranchConvertor::convertBankBranchToBankBranchDTO).collect(Collectors.toList());
@@ -160,16 +148,12 @@ public class BankBranchServiceImpl  implements BankBranchService {
 
     @Override
     public BankBranches getBankBranchesByIFSCCode(String uuid, String ifscCode) {
-        try {
             happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
             Optional<BankBranches> bankBranches = bankBranchRepo.findByIFSCCode(ifscCode);
-            if (bankBranches==null){
+            if (bankBranches.isEmpty()){
                 throw new BankBranchesNotFoundException("Bank branch not found");
             }
-            BankBranches bankBranches1 = bankBranches.get();
-            return bankBranches1;
-        }catch (Exception e){
-            throw e;
-        }
+             return bankBranches.get();
+
     }
 }

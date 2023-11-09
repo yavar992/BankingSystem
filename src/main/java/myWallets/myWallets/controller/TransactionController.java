@@ -7,7 +7,6 @@ import myWallets.myWallets.DTO.WithdrawalMoneyByAtmDTO;
 import myWallets.myWallets.entity.CustomerAccountDetails;
 import myWallets.myWallets.entity.Transaction;
 import myWallets.myWallets.service.TransactionService;
-import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

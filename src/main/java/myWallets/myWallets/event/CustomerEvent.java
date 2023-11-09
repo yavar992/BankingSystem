@@ -1,6 +1,5 @@
 package myWallets.myWallets.event;
 
-import myWallets.myWallets.DTO.CustomerDTO;
 import myWallets.myWallets.entity.Customer;
 import org.springframework.context.ApplicationEvent;
 

@@ -3,16 +3,12 @@ package myWallets.myWallets.serviceImpl;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.BankAccountDTO;
 import myWallets.myWallets.DTO.CustomerAccountDetailsDTO;
-import myWallets.myWallets.DTO.CustomerAccountRecieveDTO;
-import myWallets.myWallets.DTO.CustomerAllDetails;
 import myWallets.myWallets.constant.HappyBankUtilMethods;
 import myWallets.myWallets.convertor.BankAccountConvertor;
-import myWallets.myWallets.convertor.CustomerConvertor;
-import myWallets.myWallets.entity.*;
+import myWallets.myWallets.entity.BankAccountType;
+import myWallets.myWallets.entity.CustomerAccountDetails;
 import myWallets.myWallets.event.AccountOpenEvent;
-import myWallets.myWallets.exceptionHandling.BankBranchesNotFoundException;
 import myWallets.myWallets.exceptionHandling.CustomerAccountException;
-import myWallets.myWallets.exceptionHandling.UserNotFoundException;
 import myWallets.myWallets.repository.*;
 import myWallets.myWallets.service.CustomerAccountDetailsService;
 import myWallets.myWallets.service.CustomerService;
@@ -34,13 +30,7 @@ public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetails
 
     private final ApplicationEventPublisher applicationEventPublisher;
 
-    private final CurrentUserSessionRepo currentUserSessionRepo;
-
     private final HappyBankUtilMethods happyBankUtilMethods;
-
-    private final CustomerRepo customerRepo;
-
-
 
 
     public CustomerAccountDetailsServiceImpl(CustomerAccountDetailsRepo customerAccountDetailsRepo,
@@ -54,15 +44,10 @@ public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetails
     ) {
         this.customerAccountDetailsRepo = customerAccountDetailsRepo;
         this.applicationEventPublisher = applicationEventPublisher;
-        this.currentUserSessionRepo = currentUserSessionRepo;
         this.customerService = customerService;
         this.bankBranchRepo = bankBranchRepo;
-        this.bankAccountRepo = bankAccountRepo;
         this.happyBankUtilMethods =happyBankUtilMethods;
-        this.customerRepo = customerRepo;
     }
-
-    private final BankAccountRepo bankAccountRepo;
 
     CustomerService customerService;
 
@@ -81,7 +66,6 @@ public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetails
 
     @Override
     public CustomerAccountDetails openAccount(String uuid, BankAccountDTO bankAccountDTO) {
-        try {
 //                happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
 //                List<BankAccount> bankAccount = bankAccountRepo.findAll();
 //                BankAccount bankAccount1 = bankAccount.get(0);
@@ -102,10 +86,6 @@ public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetails
 ////                    .bankBranches(bankBranches)
 //                    .build();
 //            return customerAccountDetailsRepo.saveAndFlush(customerAccountDetails);
-        }catch (Exception e){
-            log.error("An error occurred while opening an account: " + e.getMessage());
-            throw e;
-        }
         return null;
     }
 
@@ -138,17 +118,13 @@ public class CustomerAccountDetailsServiceImpl implements CustomerAccountDetails
     @Override
     @Transactional(readOnly = true)
     public List<CustomerAccountDetailsDTO> findCustomerAccountDetails(String uuid, Long customerId) {
-        try {
           happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
             Optional<CustomerAccountDetails> customerAccountDetails = customerAccountDetailsRepo.findByCustomerId(customerId);
-            if (customerAccountDetails==null || customerAccountDetails.isEmpty()){
+            if (customerAccountDetails.isEmpty()){
                 throw new CustomerAccountException("No account exists for the customerId" + customerId);
             }
             return customerAccountDetails.stream().map(BankAccountConvertor::convertCustomerAccountDetailsToCustomerAccountDetailsDTO).collect(Collectors.toList());
-        }catch (Exception e){
-            throw e;
         }
-    }
 
     @Override
     public CustomerAccountDetailsDTO findCustomerByAccountNo(String uuid, String accountNo) {

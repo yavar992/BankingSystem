@@ -30,11 +30,9 @@ import java.util.Optional;
 @Service
 @Slf4j
 public class BankAccountUtilImpl implements BankAccountUtil{
-    private final   CurrentUserSessionRepo currentUserSessionRepo;
-   private final   HappyBankUtilMethods happyBankUtilMethods;
+    private final   HappyBankUtilMethods happyBankUtilMethods;
    private final   BankAccountRepo bankAccountRepo;
-  private final   CustomerService customerService;
-  private final   BankBranchRepo bankBranchRepo;
+    private final   BankBranchRepo bankBranchRepo;
    private final CustomerRepo customerRepo;
 
     public BankAccountUtilImpl(CurrentUserSessionRepo currentUserSessionRepo,
@@ -43,10 +41,8 @@ public class BankAccountUtilImpl implements BankAccountUtil{
                                CustomerService customerService,
                                BankBranchRepo bankBranchRepo,
                                CustomerRepo customerRepo) {
-        this.currentUserSessionRepo = currentUserSessionRepo;
         this.happyBankUtilMethods = happyBankUtilMethods;
         this.bankAccountRepo = bankAccountRepo;
-        this.customerService = customerService;
         this.bankBranchRepo = bankBranchRepo;
         this.customerRepo = customerRepo;
     }

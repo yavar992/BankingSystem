@@ -1,23 +1,19 @@
 package myWallets.myWallets.serviceImpl;
 
-import com.ctc.wstx.shaded.msv_core.reader.relax.core.ElementRuleWithHedgeState;
 import lombok.extern.slf4j.Slf4j;
-import myWallets.myWallets.DTO.*;
+import myWallets.myWallets.DTO.TransactionDTO;
+import myWallets.myWallets.DTO.WithdrawalMoneyByAtmDTO;
 import myWallets.myWallets.constant.HappyBankUtilMethods;
 import myWallets.myWallets.entity.*;
 import myWallets.myWallets.exceptionHandling.*;
 import myWallets.myWallets.repository.*;
-import myWallets.myWallets.service.BankBranchService;
 import myWallets.myWallets.service.TransactionService;
-import myWallets.myWallets.service.WalletService;
 import myWallets.myWallets.validator.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @Service
@@ -77,7 +73,6 @@ public class TransactionServiceImpl implements TransactionService {
 
     @Override
     public String debitMoneyFromAccount(String uuid, TransactionDTO transactionDebitDTO) {
-        try {
             happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
          CustomerAccountDetails customerAccountDetails = happyBankUtilMethods.validateCustomerAccountDetails(transactionDebitDTO.getAccountNumber());
          BankBranches bankBranches = happyBankUtilMethods.validateBankBranch(transactionDebitDTO.getIfscCode());
@@ -91,7 +86,6 @@ public class TransactionServiceImpl implements TransactionService {
                 throw new InsufficientBalanceException("Insufficient Balance");
             }
 
-            if (accountNumber.equals(transactionDebitDTO.getAccountNumber()) && IFSCCode.equals(transactionDebitDTO.getIfscCode())){
                 customerAccountDetails.setBalance(amount-transactionDebitDTO.getAmount());
                 customerAccountDetailsRepo.saveAndFlush(customerAccountDetails);
                 Transaction transaction = new Transaction();
@@ -103,16 +97,11 @@ public class TransactionServiceImpl implements TransactionService {
                 transaction.setDescription(transactionDebitDTO.getDescription());
                 transaction.setCustomerAccountDetails(customerAccountDetails);
                 transactionRepo.saveAndFlush(transaction);
-            }
             return "money Withdrawal successfully";
-        }catch (Exception e){
-            throw e;
-        }
     }
 
     @Override
     public String transfarMoney(String uuid, String customerAccountId, TransactionDTO transactionDTO) {
-        try {
             happyBankUtilMethods.authorizeAndGetVerifiedCustomer(uuid);
           CustomerAccountDetails customerAccountDetails = happyBankUtilMethods.validateCustomerAccountDetails(customerAccountId);
           Double balance = customerAccountDetails.getBalance();
@@ -131,7 +120,6 @@ public class TransactionServiceImpl implements TransactionService {
             if (transactionDTO.getAmount()>balance){
                 throw new InsufficientBalanceException("Insufficient Balance");
             }
-            if (customerAccountNumber2.equals(transactionDTO.getAccountNumber()) && IFSCCode.equals(transactionDTO.getIfscCode())){
                     balance = balance - transactionDTO.getAmount();
                     customerAccountDetails.setBalance(balance);
                     customerAccountDetailsRepo.saveAndFlush(customerAccountDetails);
@@ -146,11 +134,7 @@ public class TransactionServiceImpl implements TransactionService {
                     transaction.setDescription(transactionDTO.getDescription());
                     transaction.setCustomerAccountDetails(customerAccountDetails);
                     transactionRepo.saveAndFlush(transaction);
-            }
             return "Money transfer successfully";
-        }catch (Exception e){
-            throw e;
-        }
     }
 
     @Override
@@ -165,13 +149,13 @@ public class TransactionServiceImpl implements TransactionService {
         CustomerAccountDetails customerAccountDetails = getAccountDetailsByCardNumber(atmNumber);
        log.info("customerAccountDetails " + customerAccountDetails);
        Double balance = customerAccountDetails.getBalance();
-        Boolean isVerified = atm.isVerified();
+        boolean isVerified = atm.isVerified();
         if (!isVerified){
             throw new InvalidAtmDetails("Plz verified you account first for generating your ATM Pin ");
         }
        LocalDate expirationDate = atm.getAtmExpirationDate();
        String cvv = atm.getCvv();
-       if (expirationDate.compareTo(withdrawalMoneyByAtmDTO.getAtmExpirationDate())<0){
+       if (expirationDate.isBefore(withdrawalMoneyByAtmDTO.getAtmExpirationDate())){
             throw new CardExpirationException("your atm card has expired plz apply for new card");
        }
 
@@ -220,7 +204,7 @@ public class TransactionServiceImpl implements TransactionService {
     @Override
     public List<Transaction> getAllTransaction() {
         List<Transaction> transactions = transactionRepo.findAll();
-        if (transactions == null) {
+        if (transactions.isEmpty()) {
             throw new NoTransactionException("Empty list of transactions");
         }
         return transactions;
@@ -254,21 +238,20 @@ public class TransactionServiceImpl implements TransactionService {
         BankBranches bankBranches = happyBankUtilMethods.validateBankBranch(beneficiaryTransactionDTO.getIfscCode());
         String IFSCCode = bankBranches.getIFSCCode();
         Double balance = customerAccountDetails.getBalance();
-        Boolean isAccountVerified = beneficiary.isAccountVerified();
+        boolean isAccountVerified = beneficiary.isAccountVerified();
         log.info("isAccountVerified: " + isAccountVerified);
         String accountNumber = beneficiaryTransactionDTO.getAccountNumber();
-        Boolean allowedToWithdrawal = beneficiary.isAllowedToWithdraw();
+        boolean allowedToWithdrawal = beneficiary.isAllowedToWithdraw();
         log.info("allowedToWithdrawal: " +allowedToWithdrawal);
-        if (!isAccountVerified){
-            throw new BeneficiaryException("Your account is not verified yet plz verified your account in process to withdrawal money ");
-        }
+//        if (!isAccountVerified){
+//            throw new BeneficiaryException("Your account is not verified yet plz verified your account in process to withdrawal money ");
+//        }
         if (!isAccountVerified || !allowedToWithdrawal){
             throw new BeneficiaryException("You have not permission to withdraw money from owner account plz submit your document in banks to verified yourself ");
         }
         if (!accountNumber.equals(beneficiaryTransactionDTO.getAccountNumber()) || !IFSCCode.equals(beneficiaryTransactionDTO.getIfscCode())){
             throw new TransactionException("Invalid Details either accountNumber or IFSCCode is incorrect ");
         }
-        if (allowedToWithdrawal && isAccountVerified &&  accountNumber.equals(beneficiaryTransactionDTO.getAccountNumber()) && IFSCCode.equals(beneficiaryTransactionDTO.getIfscCode())){
             customerAccountDetails.setBalance(balance-beneficiaryTransactionDTO.getAmount());
             customerAccountDetailsRepo.saveAndFlush(customerAccountDetails);
             Transaction transaction = new Transaction();
@@ -280,7 +263,6 @@ public class TransactionServiceImpl implements TransactionService {
             transaction.setDescription(beneficiaryTransactionDTO.getDescription());
             transaction.setCustomerAccountDetails(customerAccountDetails);
             transactionRepo.saveAndFlush(transaction);
-        }
         return "Transaction created successfully";
     }
 

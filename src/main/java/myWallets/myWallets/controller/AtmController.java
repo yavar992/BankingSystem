@@ -6,11 +6,8 @@ import myWallets.myWallets.DTO.ActivateAccountDTO;
 import myWallets.myWallets.entity.CustomerAccountDetails;
 import myWallets.myWallets.service.AtmService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
@@ -35,8 +32,6 @@ public class AtmController {
             return ResponseEntity.status(HttpStatus.OK).body("you have applied for atm successfully");
         }
         }catch (Exception e){
-            log.info("exception " + e.getStackTrace().toString());
-            log.info(e.getMessage());
             return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.OK).body("cannot make the atm ");

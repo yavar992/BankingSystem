@@ -13,7 +13,6 @@ import myWallets.myWallets.exceptionHandling.CustomerAccountException;
 import myWallets.myWallets.repository.BeneficiaryRepo;
 import myWallets.myWallets.repository.CustomerAccountDetailsRepo;
 import myWallets.myWallets.service.BeneficiaryService;
-import myWallets.myWallets.service.CustomerAccountDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
@@ -77,14 +76,12 @@ public class BeneficiaryServiceImpl implements BeneficiaryService {
         if (Otp==null){
             throw new BeneficiaryException("Beneficiary have already verified the bank account " + bankAccountNumber);
         }
-        if (!Otp.equals(beneficiaryVerififyAccountDTO.getOtp())){
+        if (!beneficiaryVerififyAccountDTO.getOtp().equals(Otp)){
             throw new BeneficiaryException("Invalid OTP");
         }
-        if (Otp.equals(beneficiaryVerififyAccountDTO.getOtp())){
             beneficiary.setOtp(null);
             beneficiary.setAccountVerified(true);
             beneficiaryRepo.saveAndFlush(beneficiary);
-        }
         return "Beneficiary account has successfully verified ";
 
     }

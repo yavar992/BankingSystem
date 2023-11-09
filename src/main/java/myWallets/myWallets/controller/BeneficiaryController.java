@@ -1,14 +1,11 @@
 package myWallets.myWallets.controller;
 
-import com.sun.net.httpserver.HttpsServer;
-import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.BeneficiaryDTO;
 import myWallets.myWallets.DTO.BeneficiaryVerififyAccountDTO;
 import myWallets.myWallets.service.BeneficiaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 

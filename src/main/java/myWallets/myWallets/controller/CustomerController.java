@@ -1,5 +1,7 @@
 package myWallets.myWallets.controller;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.CustomerAccountRecieveDTO;
@@ -7,9 +9,9 @@ import myWallets.myWallets.DTO.CustomerAllDetails;
 import myWallets.myWallets.DTO.CustomerDTO;
 import myWallets.myWallets.DTO.OptDTO;
 import myWallets.myWallets.entity.Customer;
-import myWallets.myWallets.exceptionHandling.LoginException;
 import myWallets.myWallets.exceptionHandling.UserNotFoundException;
 import myWallets.myWallets.service.CustomerService;
+import myWallets.myWallets.util.LocalDateAdaptor;
 import myWallets.myWallets.util.SendSMS;
 import myWallets.myWallets.validator.Validator;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -138,14 +141,7 @@ public class CustomerController {
                 return ResponseEntity.status(HttpStatus.OK).body(customer);
             }
         }
-        catch (UserNotFoundException e){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
-        catch (LoginException e){
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
-        }
         catch (Exception e){
-            log.info("cannot get the user profile due to "+ e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
         }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("cannot get the user profile");
@@ -229,7 +225,9 @@ public class CustomerController {
         try {
             CustomerAllDetails customerAllDetails = customerService.findAllCustomerDetailsByCustomerId(customerId , UUID);
             if (customerAllDetails!=null){
-                return ResponseEntity.status(HttpStatus.OK).body(customerAllDetails);
+                Gson gson = new GsonBuilder().registerTypeAdapter(LocalDate.class , new LocalDateAdaptor()).create();
+                String json = gson.toJson(customerAllDetails);
+                return ResponseEntity.status(HttpStatus.OK).body(json);
             }
         }catch (Exception e){
             return ResponseEntity.status(HttpStatus.OK).body(e.getMessage());

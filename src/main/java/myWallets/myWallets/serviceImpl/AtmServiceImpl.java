@@ -99,7 +99,7 @@ public class AtmServiceImpl implements AtmService {
         if (customerAccountDetails!=null){
             throw new ATMAlreadyExist("you have already availed for the atm");
         }
-        return customerAccountDetails==null;
+        return true;
 
     }
 
@@ -113,7 +113,7 @@ public class AtmServiceImpl implements AtmService {
       Long otp = atm.getAtmOtp();
       String cvv = atm.getCvv();
 
-      if (activateAccountDTO.getOtp().equals(0) || activateAccountDTO.getCvv().length()==0){
+      if (activateAccountDTO.getOtp()==null || activateAccountDTO.getCvv().length()==0){
           throw new InvalidOTPException("fields cannot be blank");
       }
         if (otp==null){
@@ -122,11 +122,9 @@ public class AtmServiceImpl implements AtmService {
       if (!cvv.equals(activateAccountDTO.getCvv()) || !otp.equals(activateAccountDTO.getOtp())){
           throw new InvalidAtmDetails("Incorrect Data , Either cvv or otp is invalid");
       }
-      if (cvv.equals(activateAccountDTO.getCvv()) && otp.equals(activateAccountDTO.getOtp())){
           atm.setAtmOtp(null);
           atm.setVerified(true);
           atmRepository.saveAndFlush(atm);
-      }
       return "ATM Activate successfully";
     }
 

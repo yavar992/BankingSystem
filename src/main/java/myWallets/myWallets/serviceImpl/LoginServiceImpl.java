@@ -1,15 +1,15 @@
 package myWallets.myWallets.serviceImpl;
 
-import com.sun.jdi.event.ExceptionEvent;
-import jakarta.persistence.GeneratedValue;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import myWallets.myWallets.DTO.ForgetPasswordDTO;
 import myWallets.myWallets.DTO.Login;
 import myWallets.myWallets.DTO.OptDTO;
 import myWallets.myWallets.entity.CurrentUserSession;
 import myWallets.myWallets.entity.Customer;
-import myWallets.myWallets.exceptionHandling.*;
+import myWallets.myWallets.exceptionHandling.InvalidOTPException;
+import myWallets.myWallets.exceptionHandling.LoginException;
+import myWallets.myWallets.exceptionHandling.UserAlreadyLoggedIn;
+import myWallets.myWallets.exceptionHandling.UserNotFoundException;
 import myWallets.myWallets.repository.CurrentUserSessionRepo;
 import myWallets.myWallets.repository.CustomerRepo;
 import myWallets.myWallets.service.CustomerService;
@@ -45,7 +45,6 @@ public class LoginServiceImpl implements LoginService {
 
     @Override
     public String login(Login login) {
-        try {
             Customer existingUser = customerService.getCustomerByEmail(login.getEmail());
             log.info("existing user " + existingUser);
             if (existingUser == null) {
@@ -75,10 +74,7 @@ public class LoginServiceImpl implements LoginService {
                 customerRepo.saveAndFlush(existingUser);
                 return UUID;
             }
-        } catch (Exception e) {
-            throw e;
-        }
-        return null;
+        return "customer login successfully ";
     }
 
     @Override
@@ -89,7 +85,7 @@ public class LoginServiceImpl implements LoginService {
                 CurrentUserSession currentUserSession1 = currentUserSession.get();
                 currentUserSessionRepo.delete(currentUserSession1);
             }
-            if(!currentUserSession.isPresent()){
+            if(currentUserSession.isEmpty()){
                 throw new LoginException("No user logged in");
             }
             return "you have logged out successfully";
@@ -124,18 +120,19 @@ public class LoginServiceImpl implements LoginService {
     @Override
     public String verifyOTP(OptDTO optDTO) {
         Optional<Customer> customer = customerRepo.findByOtp(optDTO.getOtp());
-        if (!customer.isPresent()) {
+        if (customer.isEmpty()) {
             throw new UserNotFoundException("Incorrect OTP  ");
         }
+        if (optDTO.getOtp()==null){
+            throw new InvalidOTPException("Otp cannot be null");
+        }
         Customer customer1 = customer.get();
-        if (!optDTO.getOtp().equals(customer1.getOtp().trim())) {
+        if (!customer1.getOtp().equals(optDTO.getOtp())) {
             throw new InvalidOTPException("Incorrect OTP");
         }
-        if (optDTO.getOtp() != null && optDTO.getOtp().equals(customer1.getOtp().trim())) {
             customer1.setOtp(null);
             customer1.setVerified(true);
             customer1.setPassword(optDTO.getPassword());
-        }
         customerRepo.saveAndFlush(customer1);
 
         return "Password reset Successfully";
