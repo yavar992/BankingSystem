@@ -19,6 +19,8 @@ target/
 *.iml
 *.ipr
 /src/main/resources/application.properties
+/src/main/java/myWallets/myWallets/entity/Demo.java
+
 
 ### NetBeans ###
 /nbproject/private/
